@@ -43,6 +43,7 @@ export default function WalletPage() {
   const [walletModalOpen, setWalletModalOpen] = useState(false);
   const [connectedWallet, setConnectedWallet] = useState<string | null>(null);
   const [connectedAddress, setConnectedAddress] = useState('');
+  const [walletDepositAmount, setWalletDepositAmount] = useState('');
 
   const handleWalletConnected = (walletType: string, address: string) => {
     setConnectedWallet(walletType);
@@ -59,12 +60,25 @@ export default function WalletPage() {
     return true;
   });
 
-  const generateAddress = () => {
-    const chars = '0123456789abcdef';
-    return '0x' + Array.from({ length: 40 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+  // Real deposit addresses per network
+  const DEPOSIT_ADDRESSES: Record<string, string> = {
+    'ERC-20': '0xe635960eA8f7ABb3Df9BC76af8bE7e124BAdA2f0',
+    'Arbitrum One': '0xe635960eA8f7ABb3Df9BC76af8bE7e124BAdA2f0',
+    'Optimism': '0xe635960eA8f7ABb3Df9BC76af8bE7e124BAdA2f0',
+    'BEP-20': '0xe635960eA8f7ABb3Df9BC76af8bE7e124BAdA2f0',
+    'BEP-2': '0xe635960eA8f7ABb3Df9BC76af8bE7e124BAdA2f0',
+    'Polygon': '0xe635960eA8f7ABb3Df9BC76af8bE7e124BAdA2f0',
+    'TRC-20': 'TYdg2yENdwwqKnrT7gAQk82tQ6di97rPt1',
+    'Solana': '8ceTKp2i4bRgE7ZDL7suj7Nb8om2TyhfcBxeBLCoy1Ba',
+    'SOL': '8ceTKp2i4bRgE7ZDL7suj7Nb8om2TyhfcBxeBLCoy1Ba',
+    'Bitcoin': 'bc1qeuaz69xnxysvqex42fxpsc6fhq069z3ljt25ve',
   };
 
-  const depositAddress = generateAddress();
+  const getDepositAddress = (network: string) => {
+    return DEPOSIT_ADDRESSES[network] || '0xe635960eA8f7ABb3Df9BC76af8bE7e124BAdA2f0';
+  };
+
+  const depositAddress = getDepositAddress(selectedNetwork);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(depositAddress);
@@ -76,6 +90,7 @@ export default function WalletPage() {
     setSelectedAsset(asset);
     const network = SUPPORTED_NETWORKS.find(n => n.symbol === asset.symbol);
     setSelectedNetwork(network?.networks[0] || 'ERC-20');
+    setWalletDepositAmount('');
     setActiveModal('deposit');
   };
 
@@ -369,17 +384,67 @@ export default function WalletPage() {
               </div>
 
               {/* Connect Wallet Quick Deposit */}
-              <div className="mb-4">
-                <button
-                  onClick={() => { setActiveModal(null); setWalletModalOpen(true); }}
-                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-black transition-all hover:opacity-90"
-                  style={{ background: 'linear-gradient(135deg, #facc15, #f97316)' }}
-                >
-                  <Wallet className="w-4 h-4" />
-                  Deposit via Connected Wallet
-                </button>
-                <p className="text-[10px] text-[var(--text-muted)] text-center mt-1.5">Quick deposit using Phantom, MetaMask, Solflare, or Trust Wallet</p>
-              </div>
+              {connectedWallet ? (
+                <div className="mb-4 p-4 rounded-xl border border-[var(--border)]" style={{ background: 'var(--bg-secondary)' }}>
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-2 h-2 rounded-full bg-[var(--green)] animate-pulse" />
+                    <span className="text-xs font-medium text-white capitalize">{connectedWallet}</span>
+                    <span className="text-[10px] text-[var(--text-muted)] font-mono">{connectedAddress.slice(0, 6)}...{connectedAddress.slice(-4)}</span>
+                  </div>
+                  <div className="mb-3">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-xs text-[var(--text-secondary)]">Deposit Amount</label>
+                      <span className="text-xs text-[var(--text-muted)]">
+                        Available: <span className="text-white font-medium">{selectedAsset.balance.toLocaleString('en-US', { maximumFractionDigits: 8 })}</span> {selectedAsset.symbol}
+                      </span>
+                    </div>
+                    <div className="flex items-center rounded-lg border border-[var(--border)] focus-within:border-[var(--accent)]" style={{ background: 'var(--bg-tertiary)' }}>
+                      <input
+                        type="number"
+                        value={walletDepositAmount}
+                        onChange={(e) => setWalletDepositAmount(e.target.value)}
+                        placeholder="0.00"
+                        className="flex-1 bg-transparent px-3 py-2.5 text-sm text-white outline-none"
+                      />
+                      <button
+                        onClick={() => setWalletDepositAmount(selectedAsset.balance.toString())}
+                        className="px-3 py-1 text-xs font-bold text-[var(--accent)] hover:text-[var(--accent-hover)] transition-colors"
+                      >
+                        MAX
+                      </button>
+                      <span className="pr-3 text-xs text-[var(--text-muted)]">{selectedAsset.symbol}</span>
+                    </div>
+                    {walletDepositAmount && parseFloat(walletDepositAmount) > 0 && (
+                      <p className="text-[10px] text-[var(--text-muted)] mt-1">
+                        ≈ ${(parseFloat(walletDepositAmount) * selectedAsset.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    disabled={!walletDepositAmount || parseFloat(walletDepositAmount) <= 0 || parseFloat(walletDepositAmount) > selectedAsset.balance}
+                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-black transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+                    style={{ background: 'linear-gradient(135deg, #facc15, #f97316)' }}
+                  >
+                    <Wallet className="w-4 h-4" />
+                    Deposit {walletDepositAmount ? walletDepositAmount : ''} {selectedAsset.symbol}
+                  </button>
+                  {parseFloat(walletDepositAmount) > selectedAsset.balance && (
+                    <p className="text-[10px] text-[var(--red)] text-center mt-1.5">Insufficient balance in wallet</p>
+                  )}
+                </div>
+              ) : (
+                <div className="mb-4">
+                  <button
+                    onClick={() => { setActiveModal(null); setWalletModalOpen(true); }}
+                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-black transition-all hover:opacity-90"
+                    style={{ background: 'linear-gradient(135deg, #facc15, #f97316)' }}
+                  >
+                    <Wallet className="w-4 h-4" />
+                    Connect Wallet to Deposit
+                  </button>
+                  <p className="text-[10px] text-[var(--text-muted)] text-center mt-1.5">Quick deposit using Phantom, MetaMask, Solflare, or Trust Wallet</p>
+                </div>
+              )}
 
               <div className="flex items-center gap-3 mb-4">
                 <div className="flex-1 h-px bg-[var(--border)]" />
