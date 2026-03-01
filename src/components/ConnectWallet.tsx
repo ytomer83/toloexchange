@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { X, ExternalLink, Check, Loader2, ChevronRight, AlertTriangle, Wallet } from 'lucide-react';
+import { X, ExternalLink, Check, Loader2, ChevronRight, AlertTriangle, Wallet, Download } from 'lucide-react';
 
 type WalletType = 'phantom' | 'solflare' | 'metamask' | 'trustwallet';
-type ConnectionStatus = 'idle' | 'connecting' | 'connected' | 'error';
+type ConnectionStatus = 'idle' | 'connecting' | 'connected' | 'error' | 'not-installed';
 
 interface WalletInfo {
   id: WalletType;
@@ -95,6 +95,40 @@ function WalletIcon({ wallet, size = 40 }: { wallet: WalletInfo; size?: number }
   return iconMap[wallet.id];
 }
 
+// --- Web3 Provider Helpers ---
+
+function getEVMProvider(walletId: WalletType): EthereumProvider | null {
+  const ethereum = window.ethereum;
+  if (!ethereum) return null;
+
+  // Handle multiple providers (when both MetaMask and Trust are installed)
+  if (ethereum.providers?.length) {
+    if (walletId === 'metamask') {
+      return ethereum.providers.find((p: EthereumProvider) => p.isMetaMask && !p.isTrust) || null;
+    }
+    if (walletId === 'trustwallet') {
+      return ethereum.providers.find((p: EthereumProvider) => p.isTrust) || null;
+    }
+  }
+
+  // Single provider
+  if (walletId === 'metamask' && ethereum.isMetaMask) return ethereum;
+  if (walletId === 'trustwallet') return ethereum; // Trust Wallet may not always set isTrust
+  return null;
+}
+
+function getSolanaProvider(walletId: WalletType): SolanaProvider | null {
+  if (walletId === 'phantom') {
+    return window.phantom?.solana || (window.solana?.isPhantom ? window.solana : null) || null;
+  }
+  if (walletId === 'solflare') {
+    return window.solflare || null;
+  }
+  return null;
+}
+
+// --- Component ---
+
 interface ConnectWalletModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -105,31 +139,64 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected }: Con
   const [selectedWallet, setSelectedWallet] = useState<WalletInfo | null>(null);
   const [status, setStatus] = useState<ConnectionStatus>('idle');
   const [connectedAddress, setConnectedAddress] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   if (!isOpen) return null;
 
   const handleConnect = async (wallet: WalletInfo) => {
     setSelectedWallet(wallet);
     setStatus('connecting');
+    setErrorMessage('');
 
-    // Simulate wallet connection
-    await new Promise(r => setTimeout(r, 2000));
+    try {
+      let address = '';
+      const isEVM = wallet.id === 'metamask' || wallet.id === 'trustwallet';
 
-    // Generate a mock address
-    const chars = '0123456789abcdef';
-    const addr = wallet.id === 'phantom' || wallet.id === 'solflare'
-      ? Array.from({ length: 44 }, () => 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz123456789'[Math.floor(Math.random() * 58)]).join('')
-      : '0x' + Array.from({ length: 40 }, () => chars[Math.floor(Math.random() * 16)]).join('');
+      if (isEVM) {
+        const provider = getEVMProvider(wallet.id);
+        if (!provider) {
+          setStatus('not-installed');
+          return;
+        }
+        const accounts = await provider.request({ method: 'eth_requestAccounts' }) as string[];
+        if (!accounts || accounts.length === 0) {
+          throw new Error('No accounts returned');
+        }
+        address = accounts[0];
+      } else {
+        // Solana wallets (Phantom, Solflare)
+        const provider = getSolanaProvider(wallet.id);
+        if (!provider) {
+          setStatus('not-installed');
+          return;
+        }
+        const response = await provider.connect();
+        address = response.publicKey.toString();
+      }
 
-    setConnectedAddress(addr);
-    setStatus('connected');
-    onConnected(wallet.id, addr);
+      setConnectedAddress(address);
+      setStatus('connected');
+      onConnected(wallet.id, address);
+    } catch (err: unknown) {
+      console.error('Wallet connection failed:', err);
+      const message = err instanceof Error ? err.message : String(err);
+
+      // User rejected the request
+      if (message.includes('User rejected') || message.includes('4001') || message.includes('rejected')) {
+        handleBack();
+        return;
+      }
+
+      setErrorMessage(message);
+      setStatus('error');
+    }
   };
 
   const handleBack = () => {
     setSelectedWallet(null);
     setStatus('idle');
     setConnectedAddress('');
+    setErrorMessage('');
   };
 
   return (
@@ -142,7 +209,7 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected }: Con
               <button onClick={handleBack} className="text-[var(--text-muted)] hover:text-white mr-1 text-lg">&larr;</button>
             )}
             <Wallet className="w-5 h-5 text-[var(--accent)]" />
-            <h3 className="font-semibold text-white">
+            <h3 className="font-semibold text-white text-sm sm:text-base">
               {status === 'connected' ? 'Wallet Connected' : selectedWallet ? `Connecting to ${selectedWallet.name}` : 'Connect Wallet'}
             </h3>
           </div>
@@ -150,7 +217,7 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected }: Con
         </div>
 
         {/* Content */}
-        <div className="p-5">
+        <div className="p-4 sm:p-5">
           {status === 'idle' && !selectedWallet && (
             <>
               {/* Promo reminder */}
@@ -169,15 +236,15 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected }: Con
                   <button
                     key={wallet.id}
                     onClick={() => handleConnect(wallet)}
-                    className="w-full flex items-center gap-3 p-3.5 rounded-xl border border-[var(--border)] hover:border-[var(--text-muted)] transition-all group"
+                    className="w-full flex items-center gap-3 p-3 sm:p-3.5 rounded-xl border border-[var(--border)] hover:border-[var(--text-muted)] transition-all group"
                     style={{ background: 'var(--bg-secondary)' }}
                   >
                     <WalletIcon wallet={wallet} />
-                    <div className="text-left flex-1">
+                    <div className="text-left flex-1 min-w-0">
                       <div className="text-sm font-semibold text-white group-hover:text-[var(--accent)] transition-colors">{wallet.name}</div>
-                      <div className="text-[10px] text-[var(--text-muted)]">{wallet.networks.join(' · ')}</div>
+                      <div className="text-[10px] text-[var(--text-muted)] truncate">{wallet.networks.join(' · ')}</div>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-[var(--text-muted)] group-hover:text-white transition-colors" />
+                    <ChevronRight className="w-4 h-4 text-[var(--text-muted)] group-hover:text-white transition-colors shrink-0" />
                   </button>
                 ))}
               </div>
@@ -197,12 +264,15 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected }: Con
                 <Loader2 className="w-5 h-5 text-[var(--accent)] animate-spin" />
                 <span className="text-sm font-medium text-white">Connecting to {selectedWallet.name}...</span>
               </div>
-              <p className="text-xs text-[var(--text-muted)]">Please approve the connection in your wallet</p>
+              <p className="text-xs text-[var(--text-muted)]">Please approve the connection in your wallet extension</p>
               <div className="mt-6 flex flex-col items-center gap-2">
                 <div className="w-48 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--bg-tertiary)' }}>
                   <div className="h-full rounded-full animate-pulse" style={{ background: 'linear-gradient(90deg, #00b4d8, #c026d3)', width: '60%' }} />
                 </div>
               </div>
+              <button onClick={handleBack} className="mt-4 text-xs text-[var(--text-muted)] hover:text-white transition-colors">
+                Cancel
+              </button>
             </div>
           )}
 
@@ -237,13 +307,43 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected }: Con
             </div>
           )}
 
+          {status === 'not-installed' && selectedWallet && (
+            <div className="text-center py-8">
+              <div className="mx-auto mb-4">
+                <WalletIcon wallet={selectedWallet} size={64} />
+              </div>
+              <h4 className="text-lg font-bold text-white mb-1">{selectedWallet.name} Not Found</h4>
+              <p className="text-xs text-[var(--text-secondary)] mb-6">
+                The {selectedWallet.name} extension is not installed in your browser. Install it to connect.
+              </p>
+              <div className="flex flex-col gap-2">
+                <a
+                  href={selectedWallet.downloadUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90"
+                  style={{ background: 'linear-gradient(135deg, #00b4d8, #c026d3)' }}
+                >
+                  <Download className="w-4 h-4" />
+                  Install {selectedWallet.name}
+                </a>
+                <button onClick={handleBack} className="px-6 py-2.5 rounded-xl text-sm font-medium text-[var(--text-secondary)] hover:text-white transition-colors">
+                  Choose Another Wallet
+                </button>
+              </div>
+            </div>
+          )}
+
           {status === 'error' && (
             <div className="text-center py-8">
               <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ background: 'rgba(246, 70, 93, 0.15)' }}>
                 <AlertTriangle className="w-8 h-8 text-[var(--red)]" />
               </div>
               <h4 className="text-lg font-bold text-white mb-1">Connection Failed</h4>
-              <p className="text-xs text-[var(--text-secondary)] mb-4">Could not connect to wallet. Please try again.</p>
+              <p className="text-xs text-[var(--text-secondary)] mb-1">Could not connect to wallet. Please try again.</p>
+              {errorMessage && (
+                <p className="text-[10px] text-[var(--text-muted)] mb-4 max-w-xs mx-auto break-all">{errorMessage}</p>
+              )}
               <button onClick={handleBack} className="px-6 py-2.5 rounded-xl text-sm font-medium text-white border border-[var(--border)] hover:border-[var(--text-secondary)]">
                 Try Again
               </button>
@@ -273,11 +373,12 @@ export function ConnectWalletButton({ onClick, connected, address }: { onClick: 
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold text-black transition-all hover:opacity-90"
+      className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg text-xs font-semibold text-black transition-all hover:opacity-90"
       style={{ background: 'linear-gradient(135deg, #facc15, #f97316)' }}
     >
       <Wallet className="w-3.5 h-3.5" />
-      Connect Wallet
+      <span className="hidden sm:inline">Connect Wallet</span>
+      <span className="sm:hidden">Connect</span>
     </button>
   );
 }

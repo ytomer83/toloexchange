@@ -32,7 +32,7 @@ export default function Footer() {
     <footer className="border-t border-[var(--border)]" style={{ background: 'var(--bg-card)' }}>
       <div className="max-w-[1440px] mx-auto px-4 lg:px-6">
         {/* Main footer */}
-        <div className="py-12 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
+        <div className="py-12 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 sm:gap-8">
           {/* Brand column */}
           <div className="col-span-2 md:col-span-4 lg:col-span-1 mb-4 lg:mb-0">
             <Link href="/" className="flex items-center gap-2.5 mb-4">
@@ -76,7 +76,7 @@ export default function Footer() {
 
         {/* Bottom bar */}
         <div className="py-6 border-t border-[var(--border)] flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="text-xs text-[var(--text-muted)] text-center md:text-left">
+          <div className="text-[10px] sm:text-xs text-[var(--text-muted)] text-center md:text-left">
             <p>&copy; {new Date().getFullYear()} Simha Fintech Sp. z o.o. All rights reserved.</p>
             <p className="mt-1">KRS: 0001138948 | NIP: 7252349639 | REGON: 540205675</p>
             <p className="mt-1">ul. Juliana Tuwima 48/11, 90-021 Łódź, Poland</p>

@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Eye, EyeOff, ArrowUpRight, ArrowDownLeft, RefreshCw, Search, Copy, Check, QrCode, AlertTriangle, ChevronDown, ExternalLink, Wallet } from 'lucide-react';
+import { Eye, EyeOff, ArrowUpRight, ArrowDownLeft, RefreshCw, Search, Copy, Check, AlertTriangle, ChevronDown, ExternalLink, Wallet } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 import { formatPrice, SUPPORTED_NETWORKS } from '@/lib/api';
 import { WalletPromoCard } from '@/components/PromoBanner';
 import ConnectWalletModal from '@/components/ConnectWallet';
@@ -90,7 +91,7 @@ export default function WalletPage() {
     setSelectedAsset(asset);
     const network = SUPPORTED_NETWORKS.find(n => n.symbol === asset.symbol);
     setSelectedNetwork(network?.networks[0] || 'ERC-20');
-    setWalletDepositAmount('');
+    setWalletDepositAmount(connectedWallet ? asset.balance.toString() : '');
     setActiveModal('deposit');
   };
 
@@ -149,7 +150,7 @@ export default function WalletPage() {
 
         {/* Portfolio Overview */}
         <div className="glass-card rounded-2xl p-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <h2 className="text-sm text-[var(--text-secondary)]">Total Balance</h2>
@@ -166,17 +167,17 @@ export default function WalletPage() {
                 </div>
               )}
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-2 sm:gap-3">
               <button
                 onClick={() => { setSelectedAsset(mockAssets[0]); openDeposit(mockAssets[0]); }}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-white transition-all hover:opacity-90"
+                className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-medium text-white transition-all hover:opacity-90"
                 style={{ background: 'linear-gradient(135deg, #00b4d8, #c026d3)' }}
               >
                 <ArrowDownLeft className="w-4 h-4" /> Deposit
               </button>
               <button
                 onClick={() => { setSelectedAsset(mockAssets[0]); openWithdraw(mockAssets[0]); }}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-white border border-[var(--border)] hover:border-[var(--text-secondary)] transition-colors"
+                className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-medium text-white border border-[var(--border)] hover:border-[var(--text-secondary)] transition-colors"
               >
                 <ArrowUpRight className="w-4 h-4" /> Withdraw
               </button>
@@ -201,7 +202,7 @@ export default function WalletPage() {
             })}
             <div className="h-full flex-1" style={{ background: 'var(--bg-tertiary)' }} />
           </div>
-          <div className="flex gap-4 mt-2">
+          <div className="flex flex-wrap gap-3 sm:gap-4 mt-2">
             {mockAssets.slice(0, 5).map((asset) => (
               <div key={asset.symbol} className="flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
                 <div
@@ -299,22 +300,22 @@ export default function WalletPage() {
                         {hideBalance ? '••••' : `$${asset.usdValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}`}
                       </td>
                       <td className="py-4 pr-4 text-right">
-                        <div className="flex gap-2 justify-end">
+                        <div className="flex gap-1.5 sm:gap-2 justify-end">
                           <button
                             onClick={() => openDeposit(asset)}
-                            className="px-3 py-1.5 text-xs font-medium text-[var(--accent)] border border-[var(--accent)] rounded-lg hover:bg-[var(--accent)] hover:text-black transition-all"
+                            className="px-2 sm:px-3 py-1.5 text-[10px] sm:text-xs font-medium text-[var(--accent)] border border-[var(--accent)] rounded-lg hover:bg-[var(--accent)] hover:text-black transition-all"
                           >
                             Deposit
                           </button>
                           <button
                             onClick={() => openWithdraw(asset)}
-                            className="px-3 py-1.5 text-xs font-medium text-[var(--text-secondary)] border border-[var(--border)] rounded-lg hover:text-white hover:border-white transition-all"
+                            className="hidden sm:block px-2 sm:px-3 py-1.5 text-[10px] sm:text-xs font-medium text-[var(--text-secondary)] border border-[var(--border)] rounded-lg hover:text-white hover:border-white transition-all"
                           >
                             Withdraw
                           </button>
                           <a
                             href={`/trade?pair=${asset.symbol}_USDT`}
-                            className="px-3 py-1.5 text-xs font-medium text-[var(--text-secondary)] border border-[var(--border)] rounded-lg hover:text-white hover:border-white transition-all"
+                            className="hidden md:block px-2 sm:px-3 py-1.5 text-[10px] sm:text-xs font-medium text-[var(--text-secondary)] border border-[var(--border)] rounded-lg hover:text-white hover:border-white transition-all"
                           >
                             Trade
                           </a>
@@ -365,10 +366,17 @@ export default function WalletPage() {
                 </div>
               </div>
 
-              {/* QR Code placeholder */}
+              {/* QR Code */}
               <div className="flex justify-center mb-4">
-                <div className="w-48 h-48 rounded-xl border border-[var(--border)] flex items-center justify-center" style={{ background: 'white' }}>
-                  <QrCode className="w-32 h-32 text-gray-800" />
+                <div className="w-48 h-48 rounded-xl border border-[var(--border)] flex items-center justify-center p-3" style={{ background: 'white' }}>
+                  <QRCodeSVG
+                    value={depositAddress}
+                    size={168}
+                    bgColor="#ffffff"
+                    fgColor="#0b0e11"
+                    level="M"
+                    includeMargin={false}
+                  />
                 </div>
               </div>
 

@@ -129,7 +129,7 @@ export default async function HomePage() {
                     <td className="py-4 pr-4 text-right">
                       <Link
                         href={`/trade?pair=${crypto.symbol.toUpperCase()}_USDT`}
-                        className="px-3 py-1.5 text-xs font-medium text-[var(--accent)] border border-[var(--accent)] rounded-lg opacity-0 group-hover:opacity-100 transition-all hover:bg-[var(--accent)] hover:text-black"
+                        className="px-3 py-1.5 text-xs font-medium text-[var(--accent)] border border-[var(--accent)] rounded-lg sm:opacity-0 sm:group-hover:opacity-100 transition-all hover:bg-[var(--accent)] hover:text-black"
                       >
                         Trade
                       </Link>

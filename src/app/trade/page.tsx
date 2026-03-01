@@ -68,7 +68,7 @@ function TradeContent() {
     <div className="min-h-screen" style={{ background: 'var(--bg-primary)' }}>
       {/* Pair Info Bar */}
       <div className="border-b border-[var(--border)] px-4 py-3" style={{ background: 'var(--bg-card)' }}>
-        <div className="max-w-[1440px] mx-auto flex items-center gap-6 overflow-x-auto">
+        <div className="max-w-[1440px] mx-auto flex items-center gap-3 sm:gap-6 overflow-x-auto mobile-hide-scrollbar">
           <div className="relative">
             <button
               onClick={() => setPairDropdown(!pairDropdown)}
@@ -77,7 +77,7 @@ function TradeContent() {
               {base}/{quote} <ChevronDown className="w-4 h-4" />
             </button>
             {pairDropdown && (
-              <div className="absolute top-full left-0 mt-2 w-72 rounded-xl border border-[var(--border)] z-50 shadow-2xl" style={{ background: 'var(--bg-secondary)' }}>
+              <div className="absolute top-full left-0 mt-2 w-72 max-w-[calc(100vw-2rem)] rounded-xl border border-[var(--border)] z-50 shadow-2xl" style={{ background: 'var(--bg-secondary)' }}>
                 <div className="p-3 border-b border-[var(--border)]">
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--text-muted)]" />
@@ -109,7 +109,7 @@ function TradeContent() {
             )}
           </div>
 
-          <div className="flex items-center gap-6 text-sm">
+          <div className="flex items-center gap-3 sm:gap-6 text-sm">
             <div>
               <span className={`text-lg font-bold ${priceChange >= 0 ? 'text-[var(--green)]' : 'text-[var(--red)]'}`}>
                 ${formatPrice(currentPrice)}
@@ -139,7 +139,7 @@ function TradeContent() {
 
       {/* Main Trading Area */}
       <div className="max-w-[1440px] mx-auto px-2 lg:px-4 py-2">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px_320px] gap-2">
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_280px] lg:grid-cols-[1fr_280px_320px] gap-2">
           {/* Chart */}
           <div className="glass-card rounded-xl overflow-hidden min-h-[400px] lg:min-h-[500px]">
             {currentPrice > 0 && <TradingChart symbol={`${base}${quote}`} basePrice={currentPrice} />}
@@ -174,7 +174,7 @@ function TradeContent() {
               </div>
 
               {/* Order type tabs */}
-              <div className="flex gap-4 mb-4 border-b border-[var(--border)]">
+              <div className="flex gap-2 sm:gap-4 mb-4 border-b border-[var(--border)] overflow-x-auto">
                 {(['limit', 'market', 'stop-limit'] as const).map((type) => (
                   <button
                     key={type}
