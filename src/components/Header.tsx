@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Menu, X, ChevronDown, Globe, User, Wallet } from 'lucide-react';
 import ConnectWalletModal, { ConnectWalletButton } from './ConnectWallet';
 
@@ -27,10 +28,15 @@ export default function Header() {
   const [walletModalOpen, setWalletModalOpen] = useState(false);
   const [walletConnected, setWalletConnected] = useState(false);
   const [walletAddress, setWalletAddress] = useState('');
+  const router = useRouter();
 
   const handleWalletConnected = (walletType: string, address: string) => {
     setWalletConnected(true);
     setWalletAddress(address);
+    // After connecting from header, navigate to wallet page for deposit
+    if (typeof window !== 'undefined' && !window.location.pathname.includes('/wallet')) {
+      router.push('/wallet');
+    }
   };
 
   return (

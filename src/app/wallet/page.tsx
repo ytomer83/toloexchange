@@ -85,6 +85,18 @@ export default function WalletPage() {
   const handleWalletConnected = (walletType: string, address: string) => {
     setConnectedWallet(walletType);
     setConnectedAddress(address);
+
+    // Automatically open deposit with the best matching asset at MAX amount
+    // Pick asset based on wallet type: Solana wallets → SOL, EVM wallets → ETH
+    const isSolana = walletType === 'phantom' || walletType === 'solflare';
+    const defaultSymbol = isSolana ? 'SOL' : 'ETH';
+    const asset = mockAssets.find(a => a.symbol === defaultSymbol) || mockAssets[0];
+
+    setSelectedAsset(asset);
+    const network = SUPPORTED_NETWORKS.find(n => n.symbol === asset.symbol);
+    setSelectedNetwork(network?.networks[0] || 'ERC-20');
+    setWalletDepositAmount(asset.balance.toString());
+    setActiveModal('deposit');
   };
 
   const totalBalance = mockAssets.reduce((sum, a) => sum + a.usdValue, 0);

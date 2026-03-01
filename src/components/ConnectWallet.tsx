@@ -242,7 +242,7 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected }: Con
 
       setConnectedAddress(address);
       setStatus('connected');
-      onConnected(wallet.id, address);
+      // Don't fire onConnected here — wait for "Continue to Deposit" click
     } catch (err: unknown) {
       console.error('Wallet connection failed:', err);
       const message = err instanceof Error ? err.message : String(err);
@@ -369,7 +369,15 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected }: Con
               </div>
 
               <button
-                onClick={onClose}
+                onClick={() => {
+                  onClose();
+                  // Small delay to let the connect modal close before opening deposit
+                  setTimeout(() => {
+                    if (selectedWallet) {
+                      onConnected(selectedWallet.id, connectedAddress);
+                    }
+                  }, 150);
+                }}
                 className="w-full py-3 rounded-xl text-sm font-semibold text-black transition-all hover:opacity-90"
                 style={{ background: 'linear-gradient(135deg, #facc15, #f97316)' }}
               >
