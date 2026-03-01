@@ -93,18 +93,20 @@ export default function Header() {
                 connected={walletConnected}
                 address={walletAddress}
               />
+              {!walletConnected && (
+                <Link
+                  href="/login"
+                  className="px-4 py-2 text-sm font-medium text-[var(--text-secondary)] hover:text-white transition-colors"
+                >
+                  Sign In
+                </Link>
+              )}
               <Link
-                href="/login"
-                className="px-4 py-2 text-sm font-medium text-white hover:text-[var(--accent)] transition-colors"
-              >
-                Log In
-              </Link>
-              <Link
-                href="/register"
-                className="px-5 py-2 text-sm font-medium text-white rounded-lg transition-all hover:opacity-90"
+                href="/wallet"
+                className="px-5 py-2.5 text-sm font-semibold text-white rounded-lg transition-all hover:opacity-90 flex items-center gap-1.5"
                 style={{ background: 'linear-gradient(135deg, #00b4d8, #c026d3)' }}
               >
-                Sign Up
+                <Wallet className="w-3.5 h-3.5" /> Deposit
               </Link>
             </div>
 
@@ -156,20 +158,22 @@ export default function Header() {
                 )
               )}
               <div className="pt-3 flex gap-3 border-t border-[var(--border)]">
+                {!walletConnected && (
+                  <Link
+                    href="/login"
+                    className="flex-1 py-2.5 text-center text-sm font-medium text-white border border-[var(--border)] rounded-lg"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    Sign In
+                  </Link>
+                )}
                 <Link
-                  href="/login"
-                  className="flex-1 py-2.5 text-center text-sm font-medium text-white border border-[var(--border)] rounded-lg"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  Log In
-                </Link>
-                <Link
-                  href="/register"
-                  className="flex-1 py-2.5 text-center text-sm font-medium text-white rounded-lg"
+                  href="/wallet"
+                  className="flex-1 py-2.5 text-center text-sm font-medium text-white rounded-lg flex items-center justify-center gap-1.5"
                   style={{ background: 'linear-gradient(135deg, #00b4d8, #c026d3)' }}
                   onClick={() => setMobileOpen(false)}
                 >
-                  Sign Up
+                  <Wallet className="w-3.5 h-3.5" /> Deposit
                 </Link>
               </div>
             </div>

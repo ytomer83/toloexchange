@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { fetchTopCryptos, formatPrice, formatVolume, formatMarketCap } from '@/lib/api';
 import SparklineChart from '@/components/SparklineChart';
 import { PromoCard } from '@/components/PromoBanner';
-import { ArrowRight, Shield, Zap, BarChart3, Wallet, RefreshCw, Globe, Lock, Headphones, TrendingUp } from 'lucide-react';
+import { ArrowRight, Shield, Zap, BarChart3, Wallet as WalletIcon, RefreshCw, Globe, Lock, Headphones, TrendingUp } from 'lucide-react';
 
 export const revalidate = 30;
 
@@ -29,11 +29,11 @@ export default async function HomePage() {
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
-                href="/register"
+                href="/wallet"
                 className="px-8 py-3.5 text-base font-semibold text-white rounded-xl transition-all hover:opacity-90 hover:scale-[1.02] flex items-center gap-2"
                 style={{ background: 'linear-gradient(135deg, #00b4d8, #c026d3)' }}
               >
-                Get Started <ArrowRight className="w-4 h-4" />
+                Start Depositing <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
                 href="/markets"
@@ -157,7 +157,7 @@ export default async function HomePage() {
               { icon: Shield, title: 'Regulated & Licensed', desc: 'VASP licensed in Poland under EU regulations. Your assets are protected by institutional-grade security.' },
               { icon: Zap, title: 'Lightning Fast', desc: 'Execute trades in milliseconds with our high-performance matching engine and deep order books.' },
               { icon: BarChart3, title: 'Advanced Trading', desc: 'Professional charts, multiple order types, and real-time market data for informed decisions.' },
-              { icon: Wallet, title: 'Secure Wallets', desc: 'Multi-signature cold storage, 2FA authentication, and insurance coverage for digital assets.' },
+              { icon: WalletIcon, title: 'Secure Wallets', desc: 'Multi-signature cold storage, 2FA authentication, and insurance coverage for digital assets.' },
               { icon: RefreshCw, title: 'Instant Swaps', desc: 'Swap between 200+ tokens instantly with competitive rates and minimal slippage.' },
               { icon: Globe, title: 'Global Access', desc: 'Trade from anywhere in the world with support for 30+ fiat currencies and 180+ countries.' },
             ].map(({ icon: Icon, title, desc }) => (
@@ -183,9 +183,9 @@ export default async function HomePage() {
 
           <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
             {[
-              { step: '01', title: 'Create Account', desc: 'Sign up with your email and complete KYC verification in minutes.' },
-              { step: '02', title: 'Deposit Funds', desc: 'Deposit crypto or buy with fiat using bank transfer, card, or P2P.' },
-              { step: '03', title: 'Start Trading', desc: 'Trade spot markets, use instant swap, or set limit orders.' },
+              { step: '01', title: 'Connect Wallet', desc: 'Connect MetaMask, Phantom, Trust Wallet, or Solflare in one click.' },
+              { step: '02', title: 'Deposit & Get Bonus', desc: 'Deposit $100+ in any crypto and receive your $500 trading bonus instantly.' },
+              { step: '03', title: 'Start Trading', desc: 'Trade spot markets, use instant swap, or set limit orders. Create account anytime.' },
             ].map(({ step, title, desc }) => (
               <div key={step} className="text-center relative">
                 <div className="text-5xl font-bold gradient-text mb-4">{step}</div>
@@ -264,14 +264,14 @@ export default async function HomePage() {
               Ready to Start Trading?
             </h2>
             <p className="text-[var(--text-secondary)] mb-8">
-              Join millions of traders on TOLO. Create your account today and get access to 200+ cryptocurrencies.
+              Connect your wallet, deposit, and trade 200+ cryptocurrencies. No sign-up required to get started.
             </p>
             <Link
-              href="/register"
+              href="/wallet"
               className="inline-flex items-center gap-2 px-8 py-3.5 text-base font-semibold text-white rounded-xl transition-all hover:opacity-90"
               style={{ background: 'linear-gradient(135deg, #00b4d8, #c026d3)' }}
             >
-              Create Free Account <ArrowRight className="w-4 h-4" />
+              Connect Wallet & Deposit <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
         </div>

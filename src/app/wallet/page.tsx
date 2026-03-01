@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Eye, EyeOff, ArrowUpRight, ArrowDownLeft, RefreshCw, Search, Copy, Check, AlertTriangle, ChevronDown, ExternalLink, Wallet } from 'lucide-react';
+import { Eye, EyeOff, ArrowUpRight, ArrowDownLeft, RefreshCw, Search, Copy, Check, AlertTriangle, ChevronDown, ExternalLink, Wallet, Mail, Lock, User, CheckCircle, ArrowRight, Shield } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { formatPrice, SUPPORTED_NETWORKS } from '@/lib/api';
 import { WalletPromoCard } from '@/components/PromoBanner';
@@ -45,6 +45,42 @@ export default function WalletPage() {
   const [connectedWallet, setConnectedWallet] = useState<string | null>(null);
   const [connectedAddress, setConnectedAddress] = useState('');
   const [walletDepositAmount, setWalletDepositAmount] = useState('');
+  const [depositProcessing, setDepositProcessing] = useState(false);
+  const [depositSuccess, setDepositSuccess] = useState(false);
+  const [showCreateAccount, setShowCreateAccount] = useState(false);
+  const [accountEmail, setAccountEmail] = useState('');
+  const [accountPassword, setAccountPassword] = useState('');
+  const [accountFullName, setAccountFullName] = useState('');
+  const [showAccountPassword, setShowAccountPassword] = useState(false);
+  const [accountCreating, setAccountCreating] = useState(false);
+  const [accountCreated, setAccountCreated] = useState(false);
+  const [depositedAssetSymbol, setDepositedAssetSymbol] = useState('');
+  const [depositedAmount, setDepositedAmount] = useState('');
+
+  const handleDeposit = async () => {
+    if (!walletDepositAmount || parseFloat(walletDepositAmount) <= 0) return;
+    setDepositProcessing(true);
+    setDepositedAssetSymbol(selectedAsset?.symbol || '');
+    setDepositedAmount(walletDepositAmount);
+    // Simulate deposit processing
+    await new Promise(r => setTimeout(r, 2500));
+    setDepositProcessing(false);
+    setDepositSuccess(true);
+    // After showing success for 2s, prompt to create account
+    setTimeout(() => {
+      setDepositSuccess(false);
+      setActiveModal(null);
+      setShowCreateAccount(true);
+    }, 2500);
+  };
+
+  const handleCreateAccount = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAccountCreating(true);
+    await new Promise(r => setTimeout(r, 1500));
+    setAccountCreating(false);
+    setAccountCreated(true);
+  };
 
   const handleWalletConnected = (walletType: string, address: string) => {
     setConnectedWallet(walletType);
@@ -428,15 +464,28 @@ export default function WalletPage() {
                       </p>
                     )}
                   </div>
-                  <button
-                    disabled={!walletDepositAmount || parseFloat(walletDepositAmount) <= 0 || parseFloat(walletDepositAmount) > selectedAsset.balance}
-                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-black transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
-                    style={{ background: 'linear-gradient(135deg, #facc15, #f97316)' }}
-                  >
-                    <Wallet className="w-4 h-4" />
-                    Deposit {walletDepositAmount ? walletDepositAmount : ''} {selectedAsset.symbol}
-                  </button>
-                  {parseFloat(walletDepositAmount) > selectedAsset.balance && (
+                  {depositProcessing ? (
+                    <button disabled className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white transition-all" style={{ background: 'linear-gradient(135deg, #00b4d8, #c026d3)' }}>
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      Processing Deposit...
+                    </button>
+                  ) : depositSuccess ? (
+                    <div className="w-full flex flex-col items-center gap-2 py-3 rounded-xl text-sm font-bold text-white" style={{ background: 'rgba(14, 203, 129, 0.15)', border: '1px solid rgba(14, 203, 129, 0.3)' }}>
+                      <CheckCircle className="w-6 h-6 text-[var(--green)]" />
+                      <span className="text-[var(--green)]">Deposit Submitted Successfully!</span>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={handleDeposit}
+                      disabled={!walletDepositAmount || parseFloat(walletDepositAmount) <= 0 || parseFloat(walletDepositAmount) > selectedAsset.balance}
+                      className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-black transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+                      style={{ background: 'linear-gradient(135deg, #facc15, #f97316)' }}
+                    >
+                      <Wallet className="w-4 h-4" />
+                      Deposit {walletDepositAmount ? walletDepositAmount : ''} {selectedAsset.symbol}
+                    </button>
+                  )}
+                  {!depositProcessing && !depositSuccess && parseFloat(walletDepositAmount) > selectedAsset.balance && (
                     <p className="text-[10px] text-[var(--red)] text-center mt-1.5">Insufficient balance in wallet</p>
                   )}
                 </div>
@@ -569,6 +618,154 @@ export default function WalletPage() {
               >
                 Withdraw {selectedAsset.symbol}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Post-Deposit: Create Account Modal */}
+      {showCreateAccount && !accountCreated && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.8)' }}>
+          <div className="w-full max-w-md rounded-2xl border border-[var(--border)] overflow-hidden" style={{ background: 'var(--bg-card)' }}>
+            {/* Success header */}
+            <div className="p-6 text-center" style={{ background: 'linear-gradient(135deg, rgba(14, 203, 129, 0.1), rgba(0, 180, 216, 0.1))' }}>
+              <div className="w-16 h-16 rounded-full mx-auto mb-3 flex items-center justify-center" style={{ background: 'rgba(14, 203, 129, 0.15)', border: '2px solid rgba(14, 203, 129, 0.3)' }}>
+                <CheckCircle className="w-8 h-8 text-[var(--green)]" />
+              </div>
+              <h3 className="text-lg font-bold text-white mb-1">Deposit Received!</h3>
+              <p className="text-sm text-[var(--text-secondary)]">
+                {depositedAmount} {depositedAssetSymbol} is being processed
+              </p>
+            </div>
+
+            {/* Create account form */}
+            <div className="p-6">
+              <div className="text-center mb-5">
+                <h4 className="text-base font-semibold text-white mb-1">Secure Your Account</h4>
+                <p className="text-xs text-[var(--text-secondary)]">
+                  Create an account to track your deposits, trade, and withdraw funds.
+                </p>
+              </div>
+
+              <form onSubmit={handleCreateAccount}>
+                <div className="mb-3">
+                  <div className="flex items-center rounded-xl border border-[var(--border)] focus-within:border-[var(--accent)] transition-colors" style={{ background: 'var(--bg-secondary)' }}>
+                    <User className="w-4 h-4 text-[var(--text-muted)] ml-3" />
+                    <input
+                      type="text"
+                      value={accountFullName}
+                      onChange={(e) => setAccountFullName(e.target.value)}
+                      placeholder="Full Name"
+                      className="flex-1 bg-transparent px-3 py-2.5 text-sm text-white outline-none"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="mb-3">
+                  <div className="flex items-center rounded-xl border border-[var(--border)] focus-within:border-[var(--accent)] transition-colors" style={{ background: 'var(--bg-secondary)' }}>
+                    <Mail className="w-4 h-4 text-[var(--text-muted)] ml-3" />
+                    <input
+                      type="email"
+                      value={accountEmail}
+                      onChange={(e) => setAccountEmail(e.target.value)}
+                      placeholder="Email Address"
+                      className="flex-1 bg-transparent px-3 py-2.5 text-sm text-white outline-none"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="mb-4">
+                  <div className="flex items-center rounded-xl border border-[var(--border)] focus-within:border-[var(--accent)] transition-colors" style={{ background: 'var(--bg-secondary)' }}>
+                    <Lock className="w-4 h-4 text-[var(--text-muted)] ml-3" />
+                    <input
+                      type={showAccountPassword ? 'text' : 'password'}
+                      value={accountPassword}
+                      onChange={(e) => setAccountPassword(e.target.value)}
+                      placeholder="Create Password"
+                      className="flex-1 bg-transparent px-3 py-2.5 text-sm text-white outline-none"
+                      required
+                    />
+                    <button type="button" onClick={() => setShowAccountPassword(!showAccountPassword)} className="pr-3 text-[var(--text-muted)] hover:text-white">
+                      {showAccountPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={accountCreating || !accountEmail || !accountPassword || accountPassword.length < 8 || !accountFullName}
+                  className="w-full py-3 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  style={{ background: 'linear-gradient(135deg, #00b4d8, #c026d3)' }}
+                >
+                  {accountCreating ? (
+                    <><RefreshCw className="w-4 h-4 animate-spin" /> Creating Account...</>
+                  ) : (
+                    <><Shield className="w-4 h-4" /> Create Account & Secure Deposit</>
+                  )}
+                </button>
+              </form>
+
+              <div className="mt-4 flex items-center gap-2 justify-center">
+                <button
+                  onClick={() => setShowCreateAccount(false)}
+                  className="text-xs text-[var(--text-muted)] hover:text-white transition-colors"
+                >
+                  Skip for now
+                </button>
+              </div>
+
+              <div className="mt-4 pt-4 border-t border-[var(--border)] flex items-center gap-3 justify-center">
+                <div className="flex items-center gap-1.5 text-[10px] text-[var(--text-muted)]">
+                  <Shield className="w-3 h-3" /> VASP Licensed
+                </div>
+                <div className="w-px h-3 bg-[var(--border)]" />
+                <div className="flex items-center gap-1.5 text-[10px] text-[var(--text-muted)]">
+                  <Lock className="w-3 h-3" /> 256-bit Encryption
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Account Created Success */}
+      {accountCreated && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.8)' }}>
+          <div className="w-full max-w-md rounded-2xl border border-[var(--border)] overflow-hidden text-center" style={{ background: 'var(--bg-card)' }}>
+            <div className="p-8">
+              <div className="w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ background: 'linear-gradient(135deg, rgba(14, 203, 129, 0.15), rgba(0, 180, 216, 0.15))', border: '2px solid rgba(14, 203, 129, 0.3)' }}>
+                <CheckCircle className="w-10 h-10 text-[var(--green)]" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">You&apos;re All Set!</h3>
+              <p className="text-sm text-[var(--text-secondary)] mb-1">
+                Account created for <strong className="text-white">{accountEmail}</strong>
+              </p>
+              <p className="text-sm text-[var(--text-secondary)] mb-6">
+                Your deposit of <strong className="text-[var(--green)]">{depositedAmount} {depositedAssetSymbol}</strong> is being processed.
+              </p>
+
+              <div className="rounded-xl p-4 mb-6" style={{ background: 'rgba(250, 204, 21, 0.08)', border: '1px solid rgba(250, 204, 21, 0.2)' }}>
+                <p className="text-sm font-bold text-white mb-1">🎉 $500 Trading Bonus Applied!</p>
+                <p className="text-xs text-[var(--text-secondary)]">Your bonus will be credited once the deposit is confirmed on-chain.</p>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <a
+                  href="/trade"
+                  className="w-full py-3 rounded-xl text-sm font-semibold text-white flex items-center justify-center gap-2 transition-all hover:opacity-90"
+                  style={{ background: 'linear-gradient(135deg, #00b4d8, #c026d3)' }}
+                >
+                  Start Trading <ArrowRight className="w-4 h-4" />
+                </a>
+                <button
+                  onClick={() => { setAccountCreated(false); setShowCreateAccount(false); }}
+                  className="w-full py-3 rounded-xl text-sm font-medium text-[var(--text-secondary)] border border-[var(--border)] hover:text-white hover:border-[var(--text-secondary)] transition-all"
+                >
+                  Back to Wallet
+                </button>
+              </div>
             </div>
           </div>
         </div>
