@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TOLO Exchange — Promotional Banners</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: #0b0e11; color: #fff; padding: 40px; }
+
+  .controls {
+    max-width: 1200px;
+    margin: 0 auto 40px;
+    text-align: center;
+  }
+  .controls h1 {
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, #00b4d8, #c026d3);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .controls p { color: #848e9c; font-size: 14px; margin-bottom: 24px; }
+  .btn-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .btn {
+    padding: 10px 24px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.05);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn:hover { background: rgba(255,255,255,0.1); }
+  .btn.active { background: linear-gradient(135deg, #00b4d8, #c026d3); border-color: transparent; }
+  .btn-download {
+    padding: 12px 32px;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg, #facc15, #f97316);
+    color: #000;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 24px;
+  }
+  .btn-download:hover { transform: scale(1.03); }
+
+  .banner-wrapper {
+    display: flex;
+    justify-content: center;
+    margin: 32px auto;
+    max-width: 100%;
+    overflow: auto;
+  }
+
+  /* ===== BANNER STYLES ===== */
+  .banner {
+    position: relative;
+    overflow: hidden;
+    font-family: 'Inter', sans-serif;
+  }
+  .banner * { box-sizing: border-box; }
+
+  /* ===== LANDSCAPE (1200x628 — Facebook/LinkedIn/Twitter) ===== */
+  .banner.landscape {
+    width: 1200px;
+    height: 628px;
+    background: linear-gradient(135deg, #080c14 0%, #0c1426 30%, #140a2a 60%, #0a0e1a 100%);
+  }
+
+  /* Background elements */
+  .bg-grid {
+    position: absolute; inset: 0;
+    opacity: 0.025;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.15) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.15) 1px, transparent 1px);
+    background-size: 50px 50px;
+  }
+  .bg-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+  }
+  .bg-orb-1 { width: 500px; height: 500px; top: -200px; right: -100px; background: #7c3aed; opacity: 0.18; }
+  .bg-orb-2 { width: 400px; height: 400px; bottom: -180px; left: -80px; background: #00b4d8; opacity: 0.12; }
+  .bg-orb-3 { width: 350px; height: 350px; top: 50%; left: 45%; transform: translate(-50%,-50%); background: #c026d3; opacity: 0.06; }
+  .bg-orb-4 { width: 250px; height: 250px; bottom: -50px; right: 25%; background: #facc15; opacity: 0.06; }
+
+  /* Diagonal lines */
+  .bg-diag {
+    position: absolute; inset: 0;
+    opacity: 0.03;
+    background: repeating-linear-gradient(
+      135deg, transparent, transparent 80px,
+      rgba(255,255,255,0.1) 80px, rgba(255,255,255,0.1) 81px
+    );
+  }
+
+  /* Content */
+  .banner-content {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    height: 100%;
+    padding: 50px 70px;
+    gap: 60px;
+  }
+  .banner-left { flex: 1; }
+  .banner-right { flex-shrink: 0; }
+
+  /* Logo */
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 32px;
+  }
+  .logo-icon {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #7c3aed, #c026d3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 900; color: #fff;
+  }
+  .logo-text { font-size: 26px; font-weight: 900; color: #fff; letter-spacing: -0.5px; }
+
+  /* Badge */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    border-radius: 100px;
+    background: rgba(14, 203, 129, 0.1);
+    border: 1px solid rgba(14, 203, 129, 0.25);
+    margin-bottom: 24px;
+  }
+  .badge-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #0ecb81;
+    box-shadow: 0 0 8px #0ecb81;
+  }
+  .badge-text { font-size: 11px; font-weight: 700; color: #0ecb81; text-transform: uppercase; letter-spacing: 1.5px; }
+
+  /* Headline */
+  .headline {
+    font-size: 52px;
+    font-weight: 900;
+    line-height: 1.05;
+    color: #fff;
+    letter-spacing: -1.5px;
+    margin-bottom: 16px;
+  }
+  .hl-gold {
+    background: linear-gradient(135deg, #facc15, #f97316);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    position: relative;
+  }
+  .hl-cyan {
+    background: linear-gradient(135deg, #00b4d8, #a855f7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Subtext */
+  .subtext {
+    font-size: 16px;
+    color: #848e9c;
+    line-height: 1.6;
+    margin-bottom: 28px;
+    max-width: 480px;
+  }
+  .subtext strong { color: #eaecef; font-weight: 600; }
+
+  /* Trust row */
+  .trust-row {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+  .trust-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .trust-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+  }
+  .trust-icon.yellow { background: rgba(250,204,21,0.1); color: #facc15; }
+  .trust-icon.green { background: rgba(14,203,129,0.1); color: #0ecb81; }
+  .trust-icon.cyan { background: rgba(0,180,216,0.1); color: #00b4d8; }
+  .trust-text { font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.6); }
+
+  /* CTA */
+  .cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 40px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #facc15, #f97316);
+    font-size: 16px;
+    font-weight: 800;
+    color: #000;
+    text-decoration: none;
+    box-shadow: 0 4px 24px rgba(250,204,21,0.25);
+  }
+  .cta-arrow { font-size: 18px; }
+  .cta-sub { font-size: 12px; color: rgba(255,255,255,0.4); margin-top: 12px; }
+
+  /* ===== Right card ===== */
+  .bonus-card {
+    position: relative;
+    width: 300px;
+    border-radius: 24px;
+    background: linear-gradient(160deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+    border: 1px solid rgba(255,255,255,0.1);
+    backdrop-filter: blur(24px);
+    overflow: hidden;
+  }
+  .card-accent {
+    height: 4px;
+    background: linear-gradient(90deg, #00b4d8, #7c3aed, #c026d3, #facc15);
+  }
+  .card-body { padding: 28px; }
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+  .card-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .card-gift-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(250,204,21,0.15), rgba(249,115,22,0.15));
+    border: 1px solid rgba(250,204,21,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .card-title { font-size: 14px; font-weight: 700; color: #fff; }
+  .card-subtitle { font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 1px; }
+  .card-active-badge {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 100px;
+    background: rgba(14,203,129,0.1);
+    border: 1px solid rgba(14,203,129,0.2);
+  }
+  .card-active-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #0ecb81;
+  }
+  .card-active-text { font-size: 10px; font-weight: 700; color: #0ecb81; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* Ring */
+  .ring-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 24px;
+    position: relative;
+  }
+  .ring-svg { width: 150px; height: 150px; }
+  .ring-bg { fill: none; stroke: rgba(255,255,255,0.04); stroke-width: 3; }
+  .ring-progress { fill: none; stroke: url(#ringGrad); stroke-width: 3.5; stroke-linecap: round; stroke-dasharray: 220; stroke-dashoffset: 0; }
+  .ring-center {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+  }
+  .ring-label { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 2px; }
+  .ring-amount { font-size: 42px; font-weight: 900; color: #fff; line-height: 1; margin: 2px 0; }
+  .ring-sublabel { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 1px; }
+
+  /* Breakdown rows */
+  .breakdown-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border-radius: 12px;
+    margin-bottom: 8px;
+  }
+  .breakdown-row.deposit { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); }
+  .breakdown-row.bonus { background: rgba(0,180,216,0.04); border: 1px solid rgba(0,180,216,0.1); }
+  .breakdown-left { display: flex; align-items: center; gap: 8px; }
+  .breakdown-icon {
+    width: 22px; height: 22px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center; font-size: 12px;
+  }
+  .breakdown-icon.dep { background: rgba(250,204,21,0.12); color: #facc15; }
+  .breakdown-icon.bon { background: rgba(0,180,216,0.12); color: #00b4d8; }
+  .breakdown-label { font-size: 12px; color: rgba(255,255,255,0.45); }
+  .breakdown-value { font-size: 14px; font-weight: 700; color: #fff; }
+  .breakdown-value.gradient {
+    background: linear-gradient(90deg, #00b4d8, #a855f7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Multiplier bar */
+  .multiplier-bar {
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(250,204,21,0.06), rgba(249,115,22,0.04));
+    border: 1px solid rgba(250,204,21,0.12);
+    margin-top: 4px;
+  }
+  .mult-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .mult-label { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.35); }
+  .mult-value { font-size: 15px; font-weight: 800; color: #facc15; display: flex; align-items: center; gap: 4px; }
+  .mult-sparkle { font-size: 12px; }
+  .mult-bars { display: flex; gap: 4px; }
+  .mult-bar { flex: 1; height: 6px; border-radius: 3px; background: linear-gradient(90deg, #facc15, #f97316); }
+
+  /* Floating coins */
+  .coin {
+    position: absolute;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    z-index: 15;
+  }
+  .coin-btc { width: 50px; height: 50px; background: linear-gradient(135deg, #f7931a, #ff9500); top: -10px; left: -20px; font-size: 20px; }
+  .coin-eth { width: 42px; height: 42px; background: linear-gradient(135deg, #627eea, #8b9aef); bottom: 10px; left: -15px; font-size: 16px; }
+  .coin-sol { width: 38px; height: 38px; background: linear-gradient(135deg, #14f195, #9945ff); top: 45%; right: -15px; font-size: 10px; font-weight: 800; }
+
+  /* Card glow */
+  .card-glow {
+    position: absolute;
+    inset: -30px;
+    border-radius: 50px;
+    background: radial-gradient(ellipse at center, rgba(0,180,216,0.2), rgba(124,58,237,0.15), transparent 70%);
+    filter: blur(40px);
+    z-index: -1;
+  }
+
+  /* ===== SQUARE (1080x1080 — Instagram) ===== */
+  .banner.square { width: 1080px; height: 1080px; background: linear-gradient(135deg, #080c14 0%, #0c1426 30%, #140a2a 60%, #0a0e1a 100%); }
+  .banner.square .banner-content {
+    flex-direction: column;
+    text-align: center;
+    padding: 60px;
+    gap: 40px;
+    justify-content: center;
+  }
+  .banner.square .headline { font-size: 58px; }
+  .banner.square .subtext { max-width: 600px; margin-left: auto; margin-right: auto; font-size: 18px; }
+  .banner.square .trust-row { justify-content: center; }
+  .banner.square .cta-sub { text-align: center; }
+  .banner.square .logo { justify-content: center; }
+
+  /* ===== STORY (1080x1920 — Instagram/TikTok Story) ===== */
+  .banner.story { width: 1080px; height: 1920px; background: linear-gradient(180deg, #080c14 0%, #0c1426 30%, #140a2a 60%, #0a0e1a 100%); }
+  .banner.story .banner-content {
+    flex-direction: column;
+    text-align: center;
+    padding: 80px 60px;
+    gap: 50px;
+    justify-content: center;
+  }
+  .banner.story .headline { font-size: 64px; }
+  .banner.story .subtext { max-width: 700px; margin-left: auto; margin-right: auto; font-size: 22px; }
+  .banner.story .trust-row { justify-content: center; flex-wrap: wrap; gap: 16px; }
+  .banner.story .cta-btn { padding: 20px 56px; font-size: 20px; }
+  .banner.story .cta-sub { text-align: center; font-size: 14px; }
+  .banner.story .bonus-card { width: 380px; }
+  .banner.story .ring-svg { width: 180px; height: 180px; }
+  .banner.story .ring-amount { font-size: 52px; }
+  .banner.story .logo { justify-content: center; }
+  .banner.story .logo-icon { width: 56px; height: 56px; font-size: 28px; border-radius: 16px; }
+  .banner.story .logo-text { font-size: 32px; }
+  .banner.story .coin-btc { width: 60px; height: 60px; font-size: 24px; }
+  .banner.story .coin-eth { width: 52px; height: 52px; font-size: 20px; }
+  .banner.story .coin-sol { width: 46px; height: 46px; font-size: 12px; }
+
+  /* ===== TWITTER HEADER (1500x500) ===== */
+  .banner.twitter { width: 1500px; height: 500px; background: linear-gradient(135deg, #080c14 0%, #0c1426 30%, #140a2a 60%, #0a0e1a 100%); }
+  .banner.twitter .banner-content { padding: 40px 60px; gap: 50px; }
+  .banner.twitter .headline { font-size: 44px; margin-bottom: 12px; }
+  .banner.twitter .subtext { font-size: 14px; margin-bottom: 20px; }
+  .banner.twitter .trust-row { margin-bottom: 20px; gap: 16px; }
+  .banner.twitter .bonus-card { width: 260px; }
+  .banner.twitter .card-body { padding: 20px; }
+  .banner.twitter .ring-svg { width: 110px; height: 110px; }
+  .banner.twitter .ring-amount { font-size: 32px; }
+  .banner.twitter .ring-container { margin-bottom: 14px; }
+  .banner.twitter .breakdown-row { padding: 6px 10px; margin-bottom: 4px; }
+  .banner.twitter .breakdown-label { font-size: 10px; }
+  .banner.twitter .breakdown-value { font-size: 12px; }
+  .banner.twitter .multiplier-bar { padding: 8px 10px; }
+  .banner.twitter .mult-bars { gap: 3px; }
+  .banner.twitter .mult-bar { height: 4px; }
+  .banner.twitter .coin-btc { width: 40px; height: 40px; font-size: 16px; }
+  .banner.twitter .coin-eth { width: 34px; height: 34px; font-size: 14px; }
+  .banner.twitter .coin-sol { width: 30px; height: 30px; font-size: 9px; }
+
+  /* Website URL */
+  .site-url {
+    position: absolute;
+    bottom: 20px;
+    right: 30px;
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.25);
+    letter-spacing: 0.5px;
+    z-index: 20;
+  }
+  .banner.square .site-url { bottom: 30px; right: auto; left: 50%; transform: translateX(-50%); font-size: 15px; }
+  .banner.story .site-url { bottom: 60px; right: auto; left: 50%; transform: translateX(-50%); font-size: 18px; }
+</style>
+</head>
+<body>
+
+<div class="controls">
+  <h1>TOLO Exchange — Promotional Banners</h1>
+  <p>Select a format, preview the banner, then download as a high-quality PNG image.</p>
+  <div class="btn-row">
+    <button class="btn active" onclick="showBanner('landscape')">Facebook / LinkedIn<br><small style="opacity:0.5">1200 x 628</small></button>
+    <button class="btn" onclick="showBanner('square')">Instagram Post<br><small style="opacity:0.5">1080 x 1080</small></button>
+    <button class="btn" onclick="showBanner('story')">Story / Reels<br><small style="opacity:0.5">1080 x 1920</small></button>
+    <button class="btn" onclick="showBanner('twitter')">Twitter Header<br><small style="opacity:0.5">1500 x 500</small></button>
+  </div>
+  <button class="btn-download" onclick="downloadBanner()">Download PNG</button>
+</div>
+
+<div class="banner-wrapper" id="bannerWrapper">
+  <!-- Banner will be rendered here -->
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+let currentFormat = 'landscape';
+
+function createBannerHTML(format) {
+  return `
+    <div class="banner ${format}" id="theBanner">
+      <!-- Background -->
+      <div class="bg-grid"></div>
+      <div class="bg-orb bg-orb-1"></div>
+      <div class="bg-orb bg-orb-2"></div>
+      <div class="bg-orb bg-orb-3"></div>
+      <div class="bg-orb bg-orb-4"></div>
+      <div class="bg-diag"></div>
+
+      <div class="banner-content">
+        <div class="banner-left">
+          <!-- Logo -->
+          <div class="logo">
+            <div class="logo-icon">T</div>
+            <div class="logo-text">TOLO</div>
+          </div>
+
+          <!-- Badge -->
+          <div class="badge">
+            <div class="badge-dot"></div>
+            <div class="badge-text">Limited Time Offer</div>
+          </div>
+
+          <!-- Headline -->
+          <div class="headline">
+            Deposit <span class="hl-gold">$100</span>,<br>
+            Get <span class="hl-cyan">$500</span> to Trade
+          </div>
+
+          <!-- Subtext -->
+          <div class="subtext">
+            Connect your wallet and receive a <strong>5x trading bonus</strong> instantly. No KYC, no lockup — start trading in seconds.
+          </div>
+
+          <!-- Trust indicators -->
+          <div class="trust-row">
+            <div class="trust-item">
+              <div class="trust-icon yellow">⚡</div>
+              <div class="trust-text">Instant Credit</div>
+            </div>
+            <div class="trust-item">
+              <div class="trust-icon green">🛡</div>
+              <div class="trust-text">Fully Regulated</div>
+            </div>
+            <div class="trust-item">
+              <div class="trust-icon cyan">💰</div>
+              <div class="trust-text">Withdraw Anytime</div>
+            </div>
+          </div>
+
+          <!-- CTA -->
+          <div class="cta-btn">🎁 Claim Your $500 Bonus <span class="cta-arrow">→</span></div>
+          <div class="cta-sub">toloexchange.biz — No sign-up required</div>
+        </div>
+
+        <div class="banner-right" style="position:relative;">
+          <!-- Card glow -->
+          <div class="card-glow"></div>
+
+          <!-- Floating coins -->
+          <div class="coin coin-btc">₿</div>
+          <div class="coin coin-eth">Ξ</div>
+          <div class="coin coin-sol">SOL</div>
+
+          <!-- Bonus Card -->
+          <div class="bonus-card">
+            <div class="card-accent"></div>
+            <div class="card-body">
+              <!-- Header -->
+              <div class="card-header">
+                <div class="card-header-left">
+                  <div class="card-gift-icon">🎁</div>
+                  <div>
+                    <div class="card-title">Welcome Bonus</div>
+                    <div class="card-subtitle">First deposit reward</div>
+                  </div>
+                </div>
+                <div class="card-active-badge">
+                  <div class="card-active-dot"></div>
+                  <div class="card-active-text">Active</div>
+                </div>
+              </div>
+
+              <!-- Ring -->
+              <div class="ring-container">
+                <svg class="ring-svg" viewBox="0 0 80 80">
+                  <circle class="ring-bg" cx="40" cy="40" r="35" />
+                  <circle class="ring-progress" cx="40" cy="40" r="35" transform="rotate(-90 40 40)" />
+                  <defs>
+                    <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#00b4d8" />
+                      <stop offset="50%" stop-color="#7c3aed" />
+                      <stop offset="100%" stop-color="#facc15" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+                <div class="ring-center">
+                  <div class="ring-label">You Get</div>
+                  <div class="ring-amount">$500</div>
+                  <div class="ring-sublabel">Bonus</div>
+                </div>
+              </div>
+
+              <!-- Breakdown -->
+              <div class="breakdown-row deposit">
+                <div class="breakdown-left">
+                  <div class="breakdown-icon dep">+</div>
+                  <div class="breakdown-label">Your Deposit</div>
+                </div>
+                <div class="breakdown-value">$100</div>
+              </div>
+              <div class="breakdown-row bonus">
+                <div class="breakdown-left">
+                  <div class="breakdown-icon bon">🎁</div>
+                  <div class="breakdown-label">Bonus Added</div>
+                </div>
+                <div class="breakdown-value gradient">+$400</div>
+              </div>
+
+              <!-- Multiplier -->
+              <div class="multiplier-bar">
+                <div class="mult-top">
+                  <div class="mult-label">Bonus Multiplier</div>
+                  <div class="mult-value"><span class="mult-sparkle">✨</span> 5x</div>
+                </div>
+                <div class="mult-bars">
+                  <div class="mult-bar" style="opacity:0.6"></div>
+                  <div class="mult-bar" style="opacity:0.7"></div>
+                  <div class="mult-bar" style="opacity:0.8"></div>
+                  <div class="mult-bar" style="opacity:0.9"></div>
+                  <div class="mult-bar" style="opacity:1"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="site-url">toloexchange.biz</div>
+    </div>
+  `;
+}
+
+function showBanner(format) {
+  currentFormat = format;
+  document.getElementById('bannerWrapper').innerHTML = createBannerHTML(format);
+
+  // Update active button
+  document.querySelectorAll('.btn-row .btn').forEach(b => b.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+}
+
+function downloadBanner() {
+  const banner = document.getElementById('theBanner');
+  if (!banner) return;
+
+  html2canvas(banner, {
+    scale: 2,
+    useCORS: true,
+    backgroundColor: null,
+    logging: false,
+    width: banner.offsetWidth,
+    height: banner.offsetHeight,
+  }).then(canvas => {
+    const link = document.createElement('a');
+    link.download = `tolo-promo-${currentFormat}-${Date.now()}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+}
+
+// Initial render
+showBanner('landscape');
+</script>
+
+</body>
+</html>
