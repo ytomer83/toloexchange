@@ -1,281 +1,375 @@
-import Link from 'next/link';
-import { fetchTopCryptos, formatPrice, formatVolume, formatMarketCap } from '@/lib/api';
-import SparklineChart from '@/components/SparklineChart';
-import { PromoCard } from '@/components/PromoBanner';
-import { ArrowRight, Shield, Zap, BarChart3, Wallet as WalletIcon, RefreshCw, Globe, Lock, Headphones, TrendingUp } from 'lucide-react';
+'use client';
 
-export const revalidate = 30;
+import { useState, useEffect, useCallback } from 'react';
+import { ArrowDownUp, ChevronDown, X, Search, Shield, Zap, Globe, ArrowRight } from 'lucide-react';
 
-export default async function HomePage() {
-  const cryptos = await fetchTopCryptos(20);
+interface Token {
+  symbol: string;
+  name: string;
+  icon: string;
+  color: string;
+  networks: string[];
+  popular?: boolean;
+}
+
+const tokens: Token[] = [
+  { symbol: 'USDC', name: 'USD Coin', icon: '💲', color: '#2775ca', networks: ['Ethereum', 'Polygon', 'BSC', 'Solana', 'Arbitrum'], popular: true },
+  { symbol: 'USDT', name: 'Tether', icon: '₮', color: '#26a17b', networks: ['Ethereum', 'Polygon', 'BSC', 'Solana', 'Tron', 'Arbitrum'], popular: true },
+  { symbol: 'ETH', name: 'Ethereum', icon: 'Ξ', color: '#627eea', networks: ['Ethereum', 'Arbitrum', 'Optimism'], popular: true },
+  { symbol: 'BTC', name: 'Bitcoin', icon: '₿', color: '#f7931a', networks: ['Bitcoin'], popular: true },
+  { symbol: 'SOL', name: 'Solana', icon: '◎', color: '#9945ff', networks: ['Solana'], popular: true },
+  { symbol: 'BNB', name: 'BNB', icon: '⬡', color: '#f3ba2f', networks: ['BSC'], popular: true },
+  { symbol: 'DAI', name: 'Dai', icon: '◈', color: '#f5ac37', networks: ['Ethereum', 'Polygon', 'Arbitrum'] },
+  { symbol: 'XRP', name: 'Ripple', icon: '✕', color: '#23292f', networks: ['XRP Ledger'] },
+  { symbol: 'MATIC', name: 'Polygon', icon: '⬡', color: '#8247e5', networks: ['Polygon', 'Ethereum'] },
+  { symbol: 'AVAX', name: 'Avalanche', icon: '▲', color: '#e84142', networks: ['Avalanche'] },
+  { symbol: 'DOT', name: 'Polkadot', icon: '●', color: '#e6007a', networks: ['Polkadot'] },
+  { symbol: 'LINK', name: 'Chainlink', icon: '⬡', color: '#2a5ada', networks: ['Ethereum'] },
+  { symbol: 'ADA', name: 'Cardano', icon: '₳', color: '#0033ad', networks: ['Cardano'] },
+  { symbol: 'DOGE', name: 'Dogecoin', icon: 'Ð', color: '#c3a634', networks: ['Dogecoin'] },
+  { symbol: 'UNI', name: 'Uniswap', icon: '🦄', color: '#ff007a', networks: ['Ethereum'] },
+  { symbol: 'AAVE', name: 'Aave', icon: '👻', color: '#b6509e', networks: ['Ethereum', 'Polygon'] },
+  { symbol: 'ARB', name: 'Arbitrum', icon: '🔵', color: '#28a0f0', networks: ['Arbitrum'] },
+  { symbol: 'OP', name: 'Optimism', icon: '🔴', color: '#ff0420', networks: ['Optimism'] },
+  { symbol: 'LTC', name: 'Litecoin', icon: 'Ł', color: '#bfbbbb', networks: ['Litecoin'] },
+  { symbol: 'SHIB', name: 'Shiba Inu', icon: '🐕', color: '#fda32b', networks: ['Ethereum'] },
+];
+
+// Simulated exchange rates relative to USD
+const rates: Record<string, number> = {
+  USDC: 1, USDT: 1, DAI: 1,
+  ETH: 3245.50, BTC: 67234.00, SOL: 148.30,
+  BNB: 598.70, XRP: 0.628, MATIC: 0.72,
+  AVAX: 35.80, DOT: 7.25, LINK: 14.90,
+  ADA: 0.45, DOGE: 0.165, UNI: 7.82,
+  AAVE: 92.50, ARB: 1.12, OP: 2.35,
+  LTC: 84.20, SHIB: 0.0000245,
+};
+
+const FEE_RATE = 0.005; // 0.5%
+
+function TokenIcon({ token, size = 36 }: { token: Token; size?: number }) {
+  return (
+    <div
+      className="rounded-full flex items-center justify-center font-bold shrink-0"
+      style={{
+        width: size,
+        height: size,
+        background: `${token.color}22`,
+        color: token.color,
+        fontSize: size * 0.4,
+        border: `1.5px solid ${token.color}33`,
+      }}
+    >
+      {token.icon}
+    </div>
+  );
+}
+
+function TokenSelector({ isOpen, onClose, onSelect, excludeSymbol }: {
+  isOpen: boolean;
+  onClose: () => void;
+  onSelect: (token: Token) => void;
+  excludeSymbol: string;
+}) {
+  const [search, setSearch] = useState('');
+
+  if (!isOpen) return null;
+
+  const filtered = tokens.filter(t =>
+    t.symbol !== excludeSymbol &&
+    (t.symbol.toLowerCase().includes(search.toLowerCase()) ||
+     t.name.toLowerCase().includes(search.toLowerCase()))
+  );
+
+  const popular = filtered.filter(t => t.popular);
+  const rest = filtered.filter(t => !t.popular);
 
   return (
-    <div>
-      {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 opacity-30" style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(0, 180, 216, 0.15) 0%, transparent 60%), radial-gradient(ellipse at 80% 50%, rgba(192, 38, 211, 0.1) 0%, transparent 50%)' }} />
-        <div className="max-w-[1440px] mx-auto px-4 lg:px-6 pt-16 pb-20 lg:pt-24 lg:pb-28 relative">
-          <div className="max-w-3xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[var(--border)] text-xs text-[var(--text-secondary)] mb-6" style={{ background: 'var(--bg-secondary)' }}>
-              <div className="w-2 h-2 rounded-full bg-[var(--green)] animate-pulse" />
-              VASP Licensed Exchange
-            </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">
-              Trade Crypto with{' '}
-              <span className="gradient-text">Confidence</span>
-            </h1>
-            <p className="text-lg text-[var(--text-secondary)] mb-8 max-w-xl mx-auto">
-              Buy, sell, and swap 200+ cryptocurrencies on a regulated, secure platform. Low fees, deep liquidity, and 24/7 support.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link
-                href="/wallet"
-                className="px-8 py-3.5 text-base font-semibold text-white rounded-xl transition-all hover:opacity-90 hover:scale-[1.02] flex items-center gap-2"
-                style={{ background: 'linear-gradient(135deg, #00b4d8, #c026d3)' }}
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }}>
+      <div className="w-full max-w-md rounded-2xl border border-[var(--border)] overflow-hidden animate-fade-in" style={{ background: 'var(--bg-secondary)' }}>
+        {/* Header */}
+        <div className="p-4 border-b border-[var(--border)] flex items-center justify-between">
+          <h3 className="font-semibold text-white text-sm">Select a token</h3>
+          <button onClick={onClose} className="text-[var(--text-muted)] hover:text-white">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Search */}
+        <div className="p-3">
+          <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl border border-[var(--border)]" style={{ background: 'var(--bg-input)' }}>
+            <Search className="w-4 h-4 text-[var(--text-muted)]" />
+            <input
+              type="text"
+              placeholder="Search by name or symbol"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="bg-transparent border-none outline-none text-sm text-white placeholder:text-[var(--text-muted)] w-full"
+              autoFocus
+            />
+          </div>
+        </div>
+
+        {/* Popular tokens */}
+        {!search && popular.length > 0 && (
+          <div className="px-3 pb-2 flex flex-wrap gap-2">
+            {popular.map(token => (
+              <button
+                key={token.symbol}
+                onClick={() => { onSelect(token); onClose(); }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[var(--border)] hover:border-[var(--text-muted)] transition-colors text-xs"
+                style={{ background: 'var(--bg-tertiary)' }}
               >
-                Start Depositing <ArrowRight className="w-4 h-4" />
-              </Link>
-              <Link
-                href="/markets"
-                className="px-8 py-3.5 text-base font-semibold text-white rounded-xl border border-[var(--border)] hover:border-[var(--text-secondary)] transition-all"
-              >
-                View Markets
-              </Link>
-            </div>
-
-            {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-16 pt-8 border-t border-[var(--border)]">
-              {[
-                { label: '24h Volume', value: '$2.8B+' },
-                { label: 'Supported Assets', value: '200+' },
-                { label: 'Registered Users', value: '1.2M+' },
-                { label: 'Countries', value: '180+' },
-              ].map((stat) => (
-                <div key={stat.label} className="text-center">
-                  <div className="text-2xl md:text-3xl font-bold text-white">{stat.value}</div>
-                  <div className="text-sm text-[var(--text-secondary)] mt-1">{stat.label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Promo Banner */}
-      <section className="py-10" style={{ background: 'var(--bg-card)' }}>
-        <div className="max-w-[1440px] mx-auto px-4 lg:px-6">
-          <PromoCard />
-        </div>
-      </section>
-
-      {/* Live Prices Table */}
-      <section className="py-16" style={{ background: 'var(--bg-primary)' }}>
-        <div className="max-w-[1440px] mx-auto px-4 lg:px-6">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h2 className="text-2xl font-bold text-white">Market Overview</h2>
-              <p className="text-sm text-[var(--text-secondary)] mt-1">Live cryptocurrency prices</p>
-            </div>
-            <Link href="/markets" className="text-sm font-medium text-[var(--accent)] hover:text-[var(--accent-hover)] flex items-center gap-1">
-              View All Markets <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="text-xs text-[var(--text-muted)] border-b border-[var(--border)]">
-                  <th className="text-left pb-3 pl-4">#</th>
-                  <th className="text-left pb-3">Name</th>
-                  <th className="text-right pb-3">Price</th>
-                  <th className="text-right pb-3">24h Change</th>
-                  <th className="text-right pb-3 hidden md:table-cell">Market Cap</th>
-                  <th className="text-right pb-3 hidden lg:table-cell">Volume (24h)</th>
-                  <th className="text-right pb-3 hidden lg:table-cell">Last 7 Days</th>
-                  <th className="text-right pb-3 pr-4"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {cryptos.slice(0, 10).map((crypto) => (
-                  <tr key={crypto.id} className="border-b border-[var(--border)] hover:bg-[var(--bg-secondary)] transition-colors group">
-                    <td className="py-4 pl-4 text-sm text-[var(--text-secondary)]">{crypto.market_cap_rank}</td>
-                    <td className="py-4">
-                      <div className="flex items-center gap-3">
-                        <img src={crypto.image} alt={crypto.name} className="w-8 h-8 rounded-full" />
-                        <div>
-                          <div className="text-sm font-medium text-white">{crypto.name}</div>
-                          <div className="text-xs text-[var(--text-muted)]">{crypto.symbol.toUpperCase()}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-4 text-right text-sm font-medium text-white">${formatPrice(crypto.current_price)}</td>
-                    <td className={`py-4 text-right text-sm font-medium ${crypto.price_change_percentage_24h >= 0 ? 'text-[var(--green)]' : 'text-[var(--red)]'}`}>
-                      {crypto.price_change_percentage_24h >= 0 ? '+' : ''}{crypto.price_change_percentage_24h?.toFixed(2)}%
-                    </td>
-                    <td className="py-4 text-right text-sm text-[var(--text-secondary)] hidden md:table-cell">
-                      {formatMarketCap(crypto.market_cap)}
-                    </td>
-                    <td className="py-4 text-right text-sm text-[var(--text-secondary)] hidden lg:table-cell">
-                      {formatVolume(crypto.total_volume)}
-                    </td>
-                    <td className="py-4 text-right hidden lg:table-cell">
-                      {crypto.sparkline_in_7d && (
-                        <SparklineChart
-                          data={crypto.sparkline_in_7d.price}
-                          positive={crypto.price_change_percentage_24h >= 0}
-                        />
-                      )}
-                    </td>
-                    <td className="py-4 pr-4 text-right">
-                      <Link
-                        href={`/trade?pair=${crypto.symbol.toUpperCase()}_USDT`}
-                        className="px-3 py-1.5 text-xs font-medium text-[var(--accent)] border border-[var(--accent)] rounded-lg sm:opacity-0 sm:group-hover:opacity-100 transition-all hover:bg-[var(--accent)] hover:text-black"
-                      >
-                        Trade
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="py-20">
-        <div className="max-w-[1440px] mx-auto px-4 lg:px-6">
-          <div className="text-center mb-14">
-            <h2 className="text-3xl font-bold text-white mb-3">Why Choose TOLO?</h2>
-            <p className="text-[var(--text-secondary)] max-w-lg mx-auto">
-              Built for traders who demand security, speed, and reliability.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              { icon: Shield, title: 'Regulated & Licensed', desc: 'VASP licensed in Poland under EU regulations. Your assets are protected by institutional-grade security.' },
-              { icon: Zap, title: 'Lightning Fast', desc: 'Execute trades in milliseconds with our high-performance matching engine and deep order books.' },
-              { icon: BarChart3, title: 'Advanced Trading', desc: 'Professional charts, multiple order types, and real-time market data for informed decisions.' },
-              { icon: WalletIcon, title: 'Secure Wallets', desc: 'Multi-signature cold storage, 2FA authentication, and insurance coverage for digital assets.' },
-              { icon: RefreshCw, title: 'Instant Swaps', desc: 'Swap between 200+ tokens instantly with competitive rates and minimal slippage.' },
-              { icon: Globe, title: 'Global Access', desc: 'Trade from anywhere in the world with support for 30+ fiat currencies and 180+ countries.' },
-            ].map(({ icon: Icon, title, desc }) => (
-              <div key={title} className="glass-card rounded-2xl p-6 hover-glow transition-all duration-300 group">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4" style={{ background: 'linear-gradient(135deg, rgba(0, 180, 216, 0.2), rgba(192, 38, 211, 0.2))' }}>
-                  <Icon className="w-6 h-6 text-[var(--accent)]" />
-                </div>
-                <h3 className="text-lg font-semibold text-white mb-2">{title}</h3>
-                <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{desc}</p>
-              </div>
+                <TokenIcon token={token} size={18} />
+                <span className="text-white font-medium">{token.symbol}</span>
+              </button>
             ))}
           </div>
-        </div>
-      </section>
+        )}
 
-      {/* How It Works */}
-      <section className="py-20" style={{ background: 'var(--bg-card)' }}>
-        <div className="max-w-[1440px] mx-auto px-4 lg:px-6">
-          <div className="text-center mb-14">
-            <h2 className="text-3xl font-bold text-white mb-3">Start Trading in Minutes</h2>
-            <p className="text-[var(--text-secondary)]">Three simple steps to get started</p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-            {[
-              { step: '01', title: 'Connect Wallet', desc: 'Connect MetaMask, Phantom, Trust Wallet, or Solflare in one click.' },
-              { step: '02', title: 'Deposit & Get Bonus', desc: 'Deposit $100+ in any crypto and receive your $500 trading bonus instantly.' },
-              { step: '03', title: 'Start Trading', desc: 'Trade spot markets, use instant swap, or set limit orders. Create account anytime.' },
-            ].map(({ step, title, desc }) => (
-              <div key={step} className="text-center relative">
-                <div className="text-5xl font-bold gradient-text mb-4">{step}</div>
-                <h3 className="text-lg font-semibold text-white mb-2">{title}</h3>
-                <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Trust & Security */}
-      <section className="py-20">
-        <div className="max-w-[1440px] mx-auto px-4 lg:px-6">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-3xl font-bold text-white mb-4">
-                Security You Can <span className="gradient-text">Trust</span>
-              </h2>
-              <p className="text-[var(--text-secondary)] mb-8">
-                Your security is our top priority. We employ industry-leading practices to protect your assets and data.
-              </p>
-              <div className="space-y-4">
-                {[
-                  { icon: Lock, text: '95% of funds stored in cold wallets' },
-                  { icon: Shield, text: 'SOC 2 Type II certified infrastructure' },
-                  { icon: Headphones, text: '24/7 dedicated customer support' },
-                  { icon: TrendingUp, text: 'Real-time monitoring and threat detection' },
-                ].map(({ icon: Icon, text }) => (
-                  <div key={text} className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgba(0, 180, 216, 0.1)' }}>
-                      <Icon className="w-5 h-5 text-[var(--accent)]" />
-                    </div>
-                    <span className="text-sm text-[var(--text-primary)]">{text}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="glass-card rounded-2xl p-8">
-              <div className="text-center mb-6">
-                <h3 className="text-lg font-semibold text-white mb-1">Licensed & Regulated</h3>
-                <p className="text-sm text-[var(--text-secondary)]">Operating under full regulatory compliance</p>
-              </div>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between py-3 border-b border-[var(--border)]">
-                  <span className="text-sm text-[var(--text-secondary)]">Entity</span>
-                  <span className="text-sm text-white font-medium">Simha Fintech Sp. z o.o.</span>
-                </div>
-                <div className="flex items-center justify-between py-3 border-b border-[var(--border)]">
-                  <span className="text-sm text-[var(--text-secondary)]">License</span>
-                  <span className="text-sm text-white font-medium">VASP (Poland)</span>
-                </div>
-                <div className="flex items-center justify-between py-3 border-b border-[var(--border)]">
-                  <span className="text-sm text-[var(--text-secondary)]">KRS</span>
-                  <span className="text-sm text-white font-medium">0001138948</span>
-                </div>
-                <div className="flex items-center justify-between py-3 border-b border-[var(--border)]">
-                  <span className="text-sm text-[var(--text-secondary)]">NIP</span>
-                  <span className="text-sm text-white font-medium">7252349639</span>
-                </div>
-                <div className="flex items-center justify-between py-3">
-                  <span className="text-sm text-[var(--text-secondary)]">REGON</span>
-                  <span className="text-sm text-white font-medium">540205675</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="py-20" style={{ background: 'var(--bg-card)' }}>
-        <div className="max-w-[1440px] mx-auto px-4 lg:px-6">
-          <div className="max-w-2xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Ready to Start Trading?
-            </h2>
-            <p className="text-[var(--text-secondary)] mb-8">
-              Connect your wallet, deposit, and trade 200+ cryptocurrencies. No sign-up required to get started.
-            </p>
-            <Link
-              href="/wallet"
-              className="inline-flex items-center gap-2 px-8 py-3.5 text-base font-semibold text-white rounded-xl transition-all hover:opacity-90"
-              style={{ background: 'linear-gradient(135deg, #00b4d8, #c026d3)' }}
+        {/* Token list */}
+        <div className="border-t border-[var(--border)] max-h-[320px] overflow-y-auto">
+          {(search ? filtered : [...popular, ...rest]).map(token => (
+            <button
+              key={token.symbol}
+              onClick={() => { onSelect(token); onClose(); }}
+              className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[var(--bg-tertiary)] transition-colors"
             >
-              Connect Wallet & Deposit <ArrowRight className="w-4 h-4" />
-            </Link>
+              <TokenIcon token={token} size={36} />
+              <div className="text-left flex-1">
+                <div className="text-sm font-medium text-white">{token.symbol}</div>
+                <div className="text-xs text-[var(--text-muted)]">{token.name}</div>
+              </div>
+              <div className="text-[10px] text-[var(--text-muted)]">
+                {token.networks[0]}
+              </div>
+            </button>
+          ))}
+          {filtered.length === 0 && (
+            <div className="py-8 text-center text-sm text-[var(--text-muted)]">No tokens found</div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function SwapPage() {
+  const [fromToken, setFromToken] = useState<Token>(tokens[0]); // USDC
+  const [toToken, setToToken] = useState<Token>(tokens[1]); // USDT
+  const [fromAmount, setFromAmount] = useState('');
+  const [selectorOpen, setSelectorOpen] = useState<'from' | 'to' | null>(null);
+
+  const getRate = useCallback(() => {
+    const fromRate = rates[fromToken.symbol] || 1;
+    const toRate = rates[toToken.symbol] || 1;
+    return fromRate / toRate;
+  }, [fromToken.symbol, toToken.symbol]);
+
+  const toAmount = fromAmount
+    ? (parseFloat(fromAmount) * getRate() * (1 - FEE_RATE)).toFixed(
+        rates[toToken.symbol] >= 100 ? 6 : rates[toToken.symbol] >= 1 ? 4 : 8
+      )
+    : '';
+
+  const feeAmount = fromAmount
+    ? (parseFloat(fromAmount) * getRate() * FEE_RATE).toFixed(
+        rates[toToken.symbol] >= 100 ? 6 : rates[toToken.symbol] >= 1 ? 4 : 8
+      )
+    : '';
+
+  const handleSwapTokens = () => {
+    const tmp = fromToken;
+    setFromToken(toToken);
+    setToToken(tmp);
+    setFromAmount('');
+  };
+
+  return (
+    <div className="min-h-[calc(100vh-200px)] flex flex-col">
+      {/* Hero + Swap */}
+      <section className="flex-1 flex flex-col items-center justify-center relative py-12 px-4">
+        {/* Background effects */}
+        <div className="absolute inset-0 pointer-events-none" style={{
+          background: 'radial-gradient(ellipse at 50% 20%, rgba(47, 138, 245, 0.06) 0%, transparent 50%), radial-gradient(ellipse at 70% 60%, rgba(33, 193, 135, 0.04) 0%, transparent 40%)'
+        }} />
+
+        {/* Tagline */}
+        <div className="text-center mb-8 relative z-10">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-3 tracking-tight">
+            Swap Digital Assets
+          </h1>
+          <p className="text-sm md:text-base text-[var(--text-secondary)] max-w-md mx-auto">
+            Connect your wallet, choose your tokens, swap instantly. Flat 0.5% fee on all trades.
+          </p>
+        </div>
+
+        {/* Swap Card */}
+        <div className="w-full max-w-[460px] relative z-10">
+          <div className="rounded-2xl border border-[var(--border-light)] p-4 swap-glow" style={{ background: 'var(--bg-secondary)' }}>
+            {/* From */}
+            <div className="rounded-xl p-4" style={{ background: 'var(--bg-input)' }}>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs text-[var(--text-muted)]">You pay</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <input
+                  type="number"
+                  placeholder="0"
+                  value={fromAmount}
+                  onChange={e => setFromAmount(e.target.value)}
+                  className="flex-1 bg-transparent border-none outline-none text-2xl md:text-3xl font-semibold text-white placeholder:text-[var(--text-muted)] min-w-0"
+                />
+                <button
+                  onClick={() => setSelectorOpen('from')}
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl border border-[var(--border)] hover:border-[var(--text-muted)] transition-colors shrink-0"
+                  style={{ background: 'var(--bg-secondary)' }}
+                >
+                  <TokenIcon token={fromToken} size={24} />
+                  <span className="text-sm font-semibold text-white">{fromToken.symbol}</span>
+                  <ChevronDown className="w-4 h-4 text-[var(--text-muted)]" />
+                </button>
+              </div>
+            </div>
+
+            {/* Swap button */}
+            <div className="flex justify-center -my-2 relative z-10">
+              <button
+                onClick={handleSwapTokens}
+                className="w-10 h-10 rounded-xl border-2 flex items-center justify-center transition-all hover:rotate-180 duration-300"
+                style={{
+                  background: 'var(--bg-secondary)',
+                  borderColor: 'var(--border-light)',
+                }}
+              >
+                <ArrowDownUp className="w-4 h-4 text-[var(--text-secondary)]" />
+              </button>
+            </div>
+
+            {/* To */}
+            <div className="rounded-xl p-4" style={{ background: 'var(--bg-input)' }}>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs text-[var(--text-muted)]">You receive</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="flex-1 text-2xl md:text-3xl font-semibold min-w-0 truncate" style={{ color: toAmount ? 'var(--text-primary)' : 'var(--text-muted)' }}>
+                  {toAmount || '0'}
+                </div>
+                <button
+                  onClick={() => setSelectorOpen('to')}
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl border border-[var(--border)] hover:border-[var(--text-muted)] transition-colors shrink-0"
+                  style={{ background: 'var(--bg-secondary)' }}
+                >
+                  <TokenIcon token={toToken} size={24} />
+                  <span className="text-sm font-semibold text-white">{toToken.symbol}</span>
+                  <ChevronDown className="w-4 h-4 text-[var(--text-muted)]" />
+                </button>
+              </div>
+            </div>
+
+            {/* Rate & Fee info */}
+            {fromAmount && parseFloat(fromAmount) > 0 && (
+              <div className="mt-3 px-1 space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-[var(--text-muted)]">Rate</span>
+                  <span className="text-[var(--text-secondary)]">
+                    1 {fromToken.symbol} = {getRate().toFixed(rates[toToken.symbol] >= 100 ? 6 : rates[toToken.symbol] >= 1 ? 4 : 8)} {toToken.symbol}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-[var(--text-muted)]">Fee (0.5%)</span>
+                  <span className="text-[var(--text-secondary)]">{feeAmount} {toToken.symbol}</span>
+                </div>
+              </div>
+            )}
+
+            {/* Swap button */}
+            <button
+              className="w-full mt-4 py-4 rounded-xl text-base font-semibold btn-primary"
+              disabled={!fromAmount || parseFloat(fromAmount) <= 0}
+            >
+              {!fromAmount || parseFloat(fromAmount) <= 0
+                ? 'Enter an amount'
+                : 'Connect Wallet to Swap'}
+            </button>
           </div>
         </div>
       </section>
+
+      {/* Features strip */}
+      <section className="py-16 border-t border-[var(--border)]">
+        <div className="max-w-[1200px] mx-auto px-4 lg:px-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="text-center">
+              <div className="w-12 h-12 rounded-xl mx-auto mb-3 flex items-center justify-center" style={{ background: 'var(--accent-dim)' }}>
+                <Shield className="w-6 h-6 text-[var(--accent)]" />
+              </div>
+              <h3 className="text-sm font-semibold text-white mb-1">FINTRAC Registered</h3>
+              <p className="text-xs text-[var(--text-secondary)] max-w-xs mx-auto">
+                Fully compliant Money Services Business registered with FINTRAC Canada.
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="w-12 h-12 rounded-xl mx-auto mb-3 flex items-center justify-center" style={{ background: 'rgba(33, 193, 135, 0.1)' }}>
+                <Zap className="w-6 h-6 text-[var(--green)]" />
+              </div>
+              <h3 className="text-sm font-semibold text-white mb-1">Flat 0.5% Fee</h3>
+              <p className="text-xs text-[var(--text-secondary)] max-w-xs mx-auto">
+                Simple, transparent pricing. No hidden fees, no slippage surprises.
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="w-12 h-12 rounded-xl mx-auto mb-3 flex items-center justify-center" style={{ background: 'rgba(151, 71, 255, 0.1)' }}>
+                <Globe className="w-6 h-6" style={{ color: '#9747ff' }} />
+              </div>
+              <h3 className="text-sm font-semibold text-white mb-1">Multi-Chain Support</h3>
+              <p className="text-xs text-[var(--text-secondary)] max-w-xs mx-auto">
+                Swap across Ethereum, Solana, BSC, Polygon, Arbitrum, and more.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How it works */}
+      <section className="py-16 border-t border-[var(--border)]" style={{ background: 'var(--bg-card)' }}>
+        <div className="max-w-[900px] mx-auto px-4 lg:px-6">
+          <h2 className="text-2xl font-bold text-white text-center mb-10">How It Works</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              { step: '1', title: 'Connect Wallet', desc: 'Link your MetaMask, Phantom, Trust Wallet, Solflare, or any compatible wallet.' },
+              { step: '2', title: 'Choose Tokens', desc: 'Select the token you want to swap from and the token you want to receive.' },
+              { step: '3', title: 'Confirm & Swap', desc: 'Review the rate and 0.5% fee, then confirm the swap in your wallet.' },
+            ].map(({ step, title, desc }) => (
+              <div key={step} className="flex flex-col items-center text-center">
+                <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white mb-3" style={{ background: 'var(--accent)' }}>
+                  {step}
+                </div>
+                <h3 className="text-sm font-semibold text-white mb-1">{title}</h3>
+                <p className="text-xs text-[var(--text-secondary)] leading-relaxed">{desc}</p>
+                {step !== '3' && (
+                  <ArrowRight className="w-4 h-4 text-[var(--text-muted)] mt-3 rotate-90 md:hidden" />
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Token Selector Modals */}
+      <TokenSelector
+        isOpen={selectorOpen === 'from'}
+        onClose={() => setSelectorOpen(null)}
+        onSelect={setFromToken}
+        excludeSymbol={toToken.symbol}
+      />
+      <TokenSelector
+        isOpen={selectorOpen === 'to'}
+        onClose={() => setSelectorOpen(null)}
+        onSelect={setToToken}
+        excludeSymbol={fromToken.symbol}
+      />
     </div>
   );
 }

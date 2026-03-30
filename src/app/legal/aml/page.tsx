@@ -8,18 +8,18 @@ export default function AMLPage() {
         <div className="glass-card rounded-2xl p-8 space-y-6 text-sm text-[var(--text-secondary)] leading-relaxed">
           <section>
             <h2 className="text-lg font-semibold text-white mb-3">1. Purpose</h2>
-            <p>This Anti-Money Laundering (AML) and Counter-Terrorist Financing (CTF) Policy outlines the procedures and controls that Simha Fintech Sp. z o.o. implements to detect, prevent, and report money laundering, terrorist financing, and other financial crimes.</p>
+            <p>This Anti-Money Laundering (AML) and Counter-Terrorist Financing (CTF) Policy outlines the procedures and controls that Polarbit Solutions Limited implements to detect, prevent, and report money laundering, terrorist financing, and other financial crimes.</p>
           </section>
 
           <section>
             <h2 className="text-lg font-semibold text-white mb-3">2. Regulatory Framework</h2>
             <p>Our AML/CTF program is designed in compliance with:</p>
             <ul className="list-disc ml-6 mt-2 space-y-1">
-              <li>EU Anti-Money Laundering Directives (AMLD5/AMLD6)</li>
-              <li>Polish Act on Counteracting Money Laundering and Terrorist Financing</li>
+              <li>Proceeds of Crime (Money Laundering) and Terrorist Financing Act (PCMLTFA)</li>
+              <li>FINTRAC regulations and guidance</li>
               <li>FATF (Financial Action Task Force) Recommendations</li>
-              <li>EU Regulation on information accompanying transfers of funds</li>
-              <li>Applicable sanctions regulations</li>
+              <li>Canadian sanctions regulations</li>
+              <li>Applicable provincial regulations</li>
             </ul>
           </section>
 
@@ -39,7 +39,7 @@ export default function AMLPage() {
             <p>We perform CDD at the following stages:</p>
             <ul className="list-disc ml-6 mt-2 space-y-1">
               <li>During account registration</li>
-              <li>When a transaction exceeds EUR 1,000</li>
+              <li>When a transaction exceeds CAD 1,000</li>
               <li>When there is suspicion of money laundering or terrorist financing</li>
               <li>When there are doubts about previously obtained identification data</li>
               <li>On an ongoing basis throughout the business relationship</li>
@@ -60,7 +60,7 @@ export default function AMLPage() {
 
           <section>
             <h2 className="text-lg font-semibold text-white mb-3">6. Sanctions Screening</h2>
-            <p>All customers are screened against relevant sanctions lists, including EU, UN, OFAC, and Polish national sanctions lists. Screening is performed at onboarding and on an ongoing basis.</p>
+            <p>All customers are screened against relevant sanctions lists, including Canadian, UN, OFAC, and other applicable sanctions lists. Screening is performed at onboarding and on an ongoing basis.</p>
           </section>
 
           <section>
@@ -70,7 +70,7 @@ export default function AMLPage() {
 
           <section>
             <h2 className="text-lg font-semibold text-white mb-3">8. Suspicious Activity Reporting</h2>
-            <p>We report suspicious transactions to the General Inspector of Financial Information (GIIF) in Poland. All employees are trained to identify and escalate suspicious activities. We do not inform customers that a report has been or is being made.</p>
+            <p>We report suspicious transactions to FINTRAC (Financial Transactions and Reports Analysis Centre of Canada). All employees are trained to identify and escalate suspicious activities. We do not inform customers that a report has been or is being made.</p>
           </section>
 
           <section>
@@ -87,8 +87,8 @@ export default function AMLPage() {
             <h2 className="text-lg font-semibold text-white mb-3">11. Contact</h2>
             <p>For questions regarding this AML Policy, contact our Compliance Department:</p>
             <p className="mt-2">
-              Email: info@simhafintech.com<br />
-              Address: ul. Juliana Tuwima 48/11, 90-021 Łódź, Poland
+              Email: support@toloexchange.biz<br />
+              Address: 700-838 W Hastings Street, Vancouver, BC V6C 0A6, Canada
             </p>
           </section>
         </div>

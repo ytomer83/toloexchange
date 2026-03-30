@@ -8,13 +8,13 @@ export default function PrivacyPage() {
         <div className="glass-card rounded-2xl p-8 space-y-6 text-sm text-[var(--text-secondary)] leading-relaxed">
           <section>
             <h2 className="text-lg font-semibold text-white mb-3">1. Introduction</h2>
-            <p>Simha Fintech Sp. z o.o. (&quot;Company&quot;, &quot;we&quot;, &quot;us&quot;, or &quot;our&quot;) is committed to protecting your personal data. This Privacy Policy explains how we collect, use, process, and protect your personal data when you use the TOLO Exchange platform.</p>
-            <p className="mt-2">We comply with the General Data Protection Regulation (GDPR) and all applicable Polish data protection laws.</p>
+            <p>Polarbit Solutions Limited (&quot;Company&quot;, &quot;we&quot;, &quot;us&quot;, or &quot;our&quot;) is committed to protecting your personal data. This Privacy Policy explains how we collect, use, process, and protect your personal data when you use the TOLO Exchange platform.</p>
+            <p className="mt-2">We comply with the Personal Information Protection and Electronic Documents Act (PIPEDA) and all applicable Canadian data protection laws.</p>
           </section>
 
           <section>
             <h2 className="text-lg font-semibold text-white mb-3">2. Data Controller</h2>
-            <p>The data controller is Simha Fintech Sp. z o.o., registered at ul. Juliana Tuwima 48/11, 90-021 Łódź, Poland, KRS: 0001138948, NIP: 7252349639.</p>
+            <p>The data controller is Polarbit Solutions Limited, registered at 700-838 W Hastings Street, Vancouver, BC V6C 0A6, Canada, FINTRAC MSB: C10001398, Incorporation No: BC1547199.</p>
           </section>
 
           <section>
@@ -61,7 +61,7 @@ export default function PrivacyPage() {
 
           <section>
             <h2 className="text-lg font-semibold text-white mb-3">7. Your Rights</h2>
-            <p>Under GDPR, you have the right to:</p>
+            <p>Under applicable privacy law, you have the right to:</p>
             <ul className="list-disc ml-6 mt-2 space-y-1">
               <li>Access your personal data</li>
               <li>Rectify inaccurate data</li>
@@ -69,7 +69,7 @@ export default function PrivacyPage() {
               <li>Restrict processing of your data</li>
               <li>Data portability</li>
               <li>Object to processing</li>
-              <li>Lodge a complaint with a supervisory authority (UODO in Poland)</li>
+              <li>Lodge a complaint with the Office of the Privacy Commissioner of Canada (OPC)</li>
             </ul>
           </section>
 
@@ -80,7 +80,7 @@ export default function PrivacyPage() {
 
           <section>
             <h2 className="text-lg font-semibold text-white mb-3">9. International Transfers</h2>
-            <p>Your data may be transferred to and processed in countries outside the EEA. We ensure adequate protection through Standard Contractual Clauses or other approved transfer mechanisms.</p>
+            <p>Your data may be transferred to and processed in countries outside of Canada. We ensure adequate protection through contractual safeguards or other approved transfer mechanisms.</p>
           </section>
 
           <section>
@@ -92,8 +92,8 @@ export default function PrivacyPage() {
             <h2 className="text-lg font-semibold text-white mb-3">11. Contact Us</h2>
             <p>For any questions about this Privacy Policy or to exercise your data rights, contact our Data Protection Officer:</p>
             <p className="mt-2">
-              Email: info@simhafintech.com<br />
-              Address: ul. Juliana Tuwima 48/11, 90-021 Łódź, Poland
+              Email: support@toloexchange.biz<br />
+              Address: 700-838 W Hastings Street, Vancouver, BC V6C 0A6, Canada
             </p>
           </section>
         </div>

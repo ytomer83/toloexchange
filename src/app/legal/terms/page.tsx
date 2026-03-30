@@ -8,7 +8,7 @@ export default function TermsPage() {
         <div className="glass-card rounded-2xl p-8 space-y-6 text-sm text-[var(--text-secondary)] leading-relaxed">
           <section>
             <h2 className="text-lg font-semibold text-white mb-3">1. Introduction</h2>
-            <p>Welcome to TOLO Exchange (&quot;Platform&quot;), operated by Simha Fintech Sp. z o.o. (&quot;Company&quot;, &quot;we&quot;, &quot;us&quot;, or &quot;our&quot;), a company registered in Poland under KRS No. 0001138948, with its registered office at ul. Juliana Tuwima 48/11, 90-021 Łódź, Poland.</p>
+            <p>Welcome to TOLO Exchange (&quot;Platform&quot;), operated by Polarbit Solutions Limited (&quot;Company&quot;, &quot;we&quot;, &quot;us&quot;, or &quot;our&quot;), a FINTRAC registered MSB (FINTRAC MSB: C10001398, Incorporation No: BC1547199), with its registered office at 700-838 W Hastings Street, Vancouver, BC V6C 0A6, Canada.</p>
             <p className="mt-2">By accessing or using our Platform, you agree to be bound by these Terms of Service (&quot;Terms&quot;). If you do not agree, please do not use the Platform.</p>
           </section>
 
@@ -75,22 +75,22 @@ export default function TermsPage() {
 
           <section>
             <h2 className="text-lg font-semibold text-white mb-3">10. Limitation of Liability</h2>
-            <p>To the maximum extent permitted by applicable law, Simha Fintech Sp. z o.o. and its affiliates shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of the Platform.</p>
+            <p>To the maximum extent permitted by applicable law, Polarbit Solutions Limited and its affiliates shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of the Platform.</p>
           </section>
 
           <section>
             <h2 className="text-lg font-semibold text-white mb-3">11. Governing Law</h2>
-            <p>These Terms shall be governed by and construed in accordance with the laws of the Republic of Poland. Any disputes shall be resolved in the competent courts of Łódź, Poland.</p>
+            <p>These Terms shall be governed by and construed in accordance with the laws of Canada. Any disputes shall be resolved in the competent courts of Vancouver, Canada.</p>
           </section>
 
           <section>
             <h2 className="text-lg font-semibold text-white mb-3">12. Contact</h2>
             <p>For questions regarding these Terms, please contact us at:</p>
             <p className="mt-2">
-              Simha Fintech Sp. z o.o.<br />
-              ul. Juliana Tuwima 48/11, 90-021 Łódź, Poland<br />
-              Email: info@simhafintech.com<br />
-              Support: support@simhafintech.com
+              Polarbit Solutions Limited<br />
+              700-838 W Hastings Street, Vancouver, BC V6C 0A6, Canada<br />
+              Email: support@toloexchange.biz<br />
+              Support: support@toloexchange.biz
             </p>
           </section>
         </div>

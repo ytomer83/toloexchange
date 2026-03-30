@@ -286,16 +286,7 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected }: Con
         <div className="p-4 sm:p-5">
           {status === 'idle' && !selectedWallet && (
             <>
-              {/* Promo reminder */}
-              <div className="rounded-xl p-3 mb-4 flex items-center gap-3" style={{ background: 'linear-gradient(135deg, rgba(250, 204, 21, 0.08), rgba(249, 115, 22, 0.08))', border: '1px solid rgba(250, 204, 21, 0.15)' }}>
-                <span className="text-xl">🎁</span>
-                <div>
-                  <div className="text-xs font-bold text-yellow-400">Deposit $100 → Get $500 Bonus</div>
-                  <div className="text-[10px] text-[var(--text-muted)]">Connect wallet & deposit to claim instantly</div>
-                </div>
-              </div>
-
-              <p className="text-sm text-[var(--text-secondary)] mb-4">Choose your preferred wallet to connect and deposit:</p>
+              <p className="text-sm text-[var(--text-secondary)] mb-4">Choose your preferred wallet to connect:</p>
 
               <div className="space-y-2">
                 {wallets.map((wallet) => (
@@ -349,7 +340,7 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected }: Con
 
           {status === 'connected' && selectedWallet && (
             <div className="text-center py-4">
-              <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ background: 'rgba(14, 203, 129, 0.15)' }}>
+              <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ background: 'rgba(33, 193, 135, 0.12)' }}>
                 <Check className="w-8 h-8 text-[var(--green)]" />
               </div>
               <h4 className="text-lg font-bold text-white mb-1">Connected!</h4>
@@ -360,28 +351,19 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected }: Con
                 <div className="text-xs font-mono text-white break-all">{connectedAddress.slice(0, 8)}...{connectedAddress.slice(-8)}</div>
               </div>
 
-              {/* Bonus reminder */}
-              <div className="rounded-xl p-4 mb-4 text-left" style={{ background: 'linear-gradient(135deg, rgba(250, 204, 21, 0.08), rgba(249, 115, 22, 0.08))', border: '1px solid rgba(250, 204, 21, 0.2)' }}>
-                <div className="text-sm font-bold text-yellow-400 mb-1">🎁 $500 Bonus Ready!</div>
-                <p className="text-xs text-[var(--text-secondary)]">
-                  Deposit $100 or more to claim your $500 trading bonus. The bonus will be credited to your account instantly.
-                </p>
-              </div>
-
               <button
                 onClick={() => {
                   onClose();
-                  // Small delay to let the connect modal close before opening deposit
                   setTimeout(() => {
                     if (selectedWallet) {
                       onConnected(selectedWallet.id, connectedAddress);
                     }
                   }, 150);
                 }}
-                className="w-full py-3 rounded-xl text-sm font-semibold text-black transition-all hover:opacity-90"
-                style={{ background: 'linear-gradient(135deg, #facc15, #f97316)' }}
+                className="w-full py-3 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90"
+                style={{ background: 'var(--accent, #2f8af5)' }}
               >
-                Continue to Deposit
+                Start Swapping
               </button>
             </div>
           )}
@@ -405,7 +387,7 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected }: Con
                     <a
                       href={getDeepLink(selectedWallet)}
                       className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90"
-                      style={{ background: 'linear-gradient(135deg, #00b4d8, #c026d3)' }}
+                      style={{ background: 'var(--accent, #2f8af5)' }}
                     >
                       <Smartphone className="w-4 h-4" />
                       Open in {selectedWallet.name}
@@ -442,7 +424,7 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected }: Con
                       target="_blank"
                       rel="noopener noreferrer"
                       className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90"
-                      style={{ background: 'linear-gradient(135deg, #00b4d8, #c026d3)' }}
+                      style={{ background: 'var(--accent, #2f8af5)' }}
                     >
                       <Download className="w-4 h-4" />
                       Install {selectedWallet.name}
@@ -473,7 +455,7 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected }: Con
                 <a
                   href={getDeepLink(selectedWallet)}
                   className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-white mb-3 transition-all hover:opacity-90"
-                  style={{ background: 'linear-gradient(135deg, #00b4d8, #c026d3)' }}
+                  style={{ background: 'var(--accent, #2f8af5)' }}
                 >
                   <Smartphone className="w-4 h-4" />
                   Open in {selectedWallet.name} App
@@ -509,8 +491,8 @@ export function ConnectWalletButton({ onClick, connected, address }: { onClick: 
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg text-xs font-semibold text-black transition-all hover:opacity-90"
-      style={{ background: 'linear-gradient(135deg, #facc15, #f97316)' }}
+      className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg text-xs font-semibold text-white transition-all hover:opacity-90"
+      style={{ background: 'var(--accent, #2f8af5)' }}
     >
       <Wallet className="w-3.5 h-3.5" />
       <span className="hidden sm:inline">Connect Wallet</span>

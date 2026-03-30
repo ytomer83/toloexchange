@@ -33,7 +33,7 @@ const faqs = [
     items: [
       { q: 'How do I enable 2FA?', a: 'Go to Security Settings in your account, select "Enable 2FA", download a compatible authenticator app (Google Authenticator or Authy), scan the QR code, and enter the verification code.' },
       { q: 'How are my funds protected?', a: 'We store 95% of all assets in multi-signature cold wallets. Our infrastructure is SOC 2 Type II certified. We also employ real-time monitoring, DDoS protection, and regular security audits.' },
-      { q: 'What should I do if my account is compromised?', a: 'Immediately contact support at support@simhafintech.com. We will freeze your account to prevent unauthorized access. Then change your password and reset your 2FA from a secure device.' },
+      { q: 'What should I do if my account is compromised?', a: 'Immediately contact support at support@toloexchange.biz. We will freeze your account to prevent unauthorized access. Then change your password and reset your 2FA from a secure device.' },
     ],
   },
 ];
@@ -166,7 +166,7 @@ export default function SupportPage() {
                 </div>
                 <button
                   className="w-full py-2.5 rounded-lg text-sm font-semibold text-white transition-all hover:opacity-90"
-                  style={{ background: 'linear-gradient(135deg, #00b4d8, #c026d3)' }}
+                  style={{ background: 'var(--accent, #2f8af5)' }}
                 >
                   Send Message
                 </button>
@@ -177,7 +177,7 @@ export default function SupportPage() {
                   <Mail className="w-4 h-4 text-[var(--accent)]" />
                   <div className="text-sm">
                     <div className="text-[var(--text-muted)]">Email</div>
-                    <div className="text-white">support@simhafintech.com</div>
+                    <div className="text-white">support@toloexchange.biz</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">

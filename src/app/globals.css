@@ -1,20 +1,21 @@
 @import "tailwindcss";
 
 :root {
-  --bg-primary: #0b0e11;
-  --bg-secondary: #1e2329;
-  --bg-tertiary: #2b3139;
-  --bg-card: #181a20;
-  --text-primary: #eaecef;
-  --text-secondary: #848e9c;
-  --text-muted: #5e6673;
-  --accent: #00d4aa;
-  --accent-hover: #00eebb;
-  --accent-gradient: linear-gradient(135deg, #00b4d8, #c026d3);
-  --green: #0ecb81;
-  --red: #f6465d;
-  --border: #2b3139;
-  --yellow: #f0b90b;
+  --bg-primary: #06070a;
+  --bg-secondary: #111318;
+  --bg-tertiary: #1a1d24;
+  --bg-card: #0e1014;
+  --bg-input: #12141a;
+  --text-primary: #e8eaed;
+  --text-secondary: #8b8f98;
+  --text-muted: #4a4f5a;
+  --accent: #2f8af5;
+  --accent-hover: #4a9ff7;
+  --accent-dim: rgba(47, 138, 245, 0.12);
+  --green: #21c187;
+  --red: #f04832;
+  --border: #1e2128;
+  --border-light: #262a33;
 }
 
 @theme inline {
@@ -32,120 +33,50 @@
 body {
   background: var(--bg-primary);
   color: var(--text-primary);
-  font-family: var(--font-sans, Arial, Helvetica, sans-serif);
+  font-family: var(--font-sans, 'Inter', Arial, Helvetica, sans-serif);
 }
 
-/* Custom scrollbar for webkit */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--bg-tertiary);
-  border-radius: 3px;
-}
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--bg-tertiary); border-radius: 3px; }
 
 /* Animations */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes slideIn {
-  from { opacity: 0; transform: translateX(-20px); }
-  to { opacity: 1; transform: translateX(0); }
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes pulse-green {
-  0%, 100% { color: #0ecb81; }
-  50% { color: #0ecb81aa; }
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
-@keyframes pulse-red {
-  0%, 100% { color: #f6465d; }
-  50% { color: #f6465daa; }
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
-@keyframes ticker-scroll {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
+.animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+.animate-slide-up { animation: slideUp 0.5s ease-out forwards; }
+.animate-spin { animation: spin 1s linear infinite; }
 
-.animate-fade-in {
-  animation: fadeIn 0.5s ease-out forwards;
-}
-
-.animate-slide-in {
-  animation: slideIn 0.5s ease-out forwards;
-}
-
-.animate-ticker {
-  animation: ticker-scroll 60s linear infinite;
-}
-
+/* Glass card */
 .glass-card {
-  background: rgba(30, 35, 41, 0.8);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(43, 49, 57, 0.5);
+  background: rgba(17, 19, 24, 0.8);
+  backdrop-filter: blur(24px);
+  border: 1px solid var(--border);
 }
 
-.gradient-text {
-  background: linear-gradient(135deg, #00b4d8, #c026d3);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+/* Swap card glow */
+.swap-glow {
+  box-shadow: 0 0 80px rgba(47, 138, 245, 0.06), 0 0 160px rgba(47, 138, 245, 0.03);
 }
 
-.gradient-border {
-  position: relative;
-}
-
-.gradient-border::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(135deg, #00b4d8, #c026d3);
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask-composite: exclude;
-  -webkit-mask-composite: xor;
-  pointer-events: none;
-}
-
-.hover-glow:hover {
-  box-shadow: 0 0 30px rgba(0, 180, 216, 0.15);
-}
-
-/* Order book depth visualization */
-.depth-green {
-  background: linear-gradient(to left, rgba(14, 203, 129, 0.15), transparent);
-}
-
-.depth-red {
-  background: linear-gradient(to left, rgba(246, 70, 93, 0.15), transparent);
-}
-
-/* Tab active indicator */
-.tab-active {
-  position: relative;
-}
-
-.tab-active::after {
-  content: '';
-  position: absolute;
-  bottom: -1px;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(135deg, #00b4d8, #c026d3);
-}
-
+/* Number input */
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
@@ -156,66 +87,45 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
-/* Range slider styling */
-input[type="range"] {
-  -webkit-appearance: none;
-  appearance: none;
-  height: 4px;
-  background: var(--bg-tertiary);
-  border-radius: 2px;
-  outline: none;
-}
-
-input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 16px;
-  height: 16px;
-  background: #00b4d8;
-  border-radius: 50%;
-  cursor: pointer;
-}
-
-/* === Mobile & Touch Optimizations === */
-
-/* Minimum touch targets on touch devices */
-@media (pointer: coarse) {
-  input[type="range"]::-webkit-slider-thumb {
-    width: 24px;
-    height: 24px;
-  }
-}
-
 /* Prevent iOS zoom on input focus */
 @media screen and (max-width: 768px) {
   input[type="text"],
   input[type="number"],
-  input[type="email"],
-  input[type="password"],
-  select,
-  textarea {
+  select {
     font-size: 16px;
   }
 }
 
-/* Prevent horizontal overflow */
 html, body {
   overflow-x: hidden;
 }
 
-/* Better touch scrolling */
 .overflow-x-auto,
 .overflow-y-auto {
   -webkit-overflow-scrolling: touch;
 }
 
-/* Hide scrollbar on mobile for horizontal scroll areas */
-@media (max-width: 768px) {
-  .mobile-hide-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-  .mobile-hide-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
+/* Token selector hover */
+.token-option:hover {
+  background: var(--bg-tertiary);
+}
+
+/* Custom button styles */
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+  border-radius: 12px;
+  transition: all 0.2s;
+}
+
+.btn-primary:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+.btn-primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
 }
