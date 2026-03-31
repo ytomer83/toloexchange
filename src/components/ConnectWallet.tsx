@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { X, ExternalLink, Check, Loader2, ChevronRight, AlertTriangle, Wallet, Download, Smartphone } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Check, Loader2, ChevronRight, AlertTriangle, Wallet, Download, Smartphone, LogOut } from 'lucide-react';
 
 type WalletType = 'phantom' | 'solflare' | 'metamask' | 'trustwallet';
 type ConnectionStatus = 'idle' | 'connecting' | 'connected' | 'error' | 'not-installed';
@@ -21,7 +21,7 @@ const wallets: WalletInfo[] = [
     id: 'metamask',
     name: 'MetaMask',
     icon: '/wallets/metamask.svg',
-    networks: ['Ethereum', 'BSC', 'Polygon', 'Arbitrum', 'Optimism', 'Avalanche'],
+    networks: ['Ethereum', 'BSC', 'Polygon', 'Arbitrum', 'Optimism', 'Avalanche', 'Base'],
     color: '#F6851B',
     downloadUrl: 'https://metamask.io/download/',
     deepLinkBase: 'https://metamask.app.link/dapp/',
@@ -30,25 +30,16 @@ const wallets: WalletInfo[] = [
     id: 'phantom',
     name: 'Phantom',
     icon: '/wallets/phantom.svg',
-    networks: ['Solana', 'Ethereum', 'Polygon'],
+    networks: ['Ethereum', 'Polygon', 'Base', 'Solana'],
     color: '#AB9FF2',
     downloadUrl: 'https://phantom.app/',
     deepLinkBase: 'https://phantom.app/ul/browse/',
   },
   {
-    id: 'solflare',
-    name: 'Solflare',
-    icon: '/wallets/solflare.svg',
-    networks: ['Solana'],
-    color: '#FC8E2C',
-    downloadUrl: 'https://solflare.com/',
-    deepLinkBase: 'https://solflare.com/ul/v1/browse/',
-  },
-  {
     id: 'trustwallet',
     name: 'Trust Wallet',
     icon: '/wallets/trustwallet.svg',
-    networks: ['Ethereum', 'BSC', 'Polygon', 'Solana', 'Arbitrum', 'Avalanche'],
+    networks: ['Ethereum', 'BSC', 'Polygon', 'Arbitrum', 'Avalanche'],
     color: '#3375BB',
     downloadUrl: 'https://trustwallet.com/',
     deepLinkBase: 'https://link.trustwallet.com/open_url?coin_id=60&url=',
@@ -62,38 +53,18 @@ function isMobile(): boolean {
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 }
 
-function isInWalletBrowser(): boolean {
-  if (typeof window === 'undefined') return false;
-  // Check if we're inside a wallet's in-app browser
-  return !!(
-    window.ethereum?.isMetaMask ||
-    window.ethereum?.isTrust ||
-    window.phantom?.solana ||
-    window.solana?.isPhantom ||
-    window.solflare
-  );
-}
-
 function getDeepLink(wallet: WalletInfo): string {
   if (typeof window === 'undefined') return wallet.downloadUrl;
   const currentUrl = window.location.href;
 
   switch (wallet.id) {
     case 'metamask':
-      // MetaMask deep link: opens current dapp in MetaMask's browser
       return `${wallet.deepLinkBase}${window.location.host}${window.location.pathname}`;
     case 'phantom': {
-      // Phantom deep link: opens URL in Phantom browser
       const encodedUrl = encodeURIComponent(currentUrl);
       return `${wallet.deepLinkBase}${encodedUrl}?ref=${encodeURIComponent(window.location.origin)}`;
     }
-    case 'solflare': {
-      // Solflare deep link
-      const encodedUrl = encodeURIComponent(currentUrl);
-      return `${wallet.deepLinkBase}${encodedUrl}`;
-    }
     case 'trustwallet': {
-      // Trust Wallet deep link
       const encodedUrl = encodeURIComponent(currentUrl);
       return `${wallet.deepLinkBase}${encodedUrl}`;
     }
@@ -117,7 +88,15 @@ function WalletIconImg({ wallet, size = 40 }: { wallet: WalletInfo; size?: numbe
 
 // --- Web3 Provider Helpers ---
 
+/** Get the EVM provider for a specific wallet */
 function getEVMProvider(walletId: WalletType): EthereumProvider | null {
+  if (typeof window === 'undefined') return null;
+
+  // Phantom has its own EVM provider at window.phantom.ethereum
+  if (walletId === 'phantom') {
+    return window.phantom?.ethereum || null;
+  }
+
   const ethereum = window.ethereum;
   if (!ethereum) return null;
 
@@ -133,17 +112,7 @@ function getEVMProvider(walletId: WalletType): EthereumProvider | null {
 
   // Single provider
   if (walletId === 'metamask' && ethereum.isMetaMask) return ethereum;
-  if (walletId === 'trustwallet') return ethereum; // Trust Wallet may not always set isTrust
-  return null;
-}
-
-function getSolanaProvider(walletId: WalletType): SolanaProvider | null {
-  if (walletId === 'phantom') {
-    return window.phantom?.solana || (window.solana?.isPhantom ? window.solana : null) || null;
-  }
-  if (walletId === 'solflare') {
-    return window.solflare || null;
-  }
+  if (walletId === 'trustwallet') return ethereum;
   return null;
 }
 
@@ -153,71 +122,132 @@ interface ConnectWalletModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConnected: (wallet: WalletType, address: string) => void;
+  connectedWallet?: { type: string; address: string } | null;
+  onDisconnect?: () => void;
 }
 
-export default function ConnectWalletModal({ isOpen, onClose, onConnected }: ConnectWalletModalProps) {
+export default function ConnectWalletModal({ isOpen, onClose, onConnected, connectedWallet, onDisconnect }: ConnectWalletModalProps) {
   const [selectedWallet, setSelectedWallet] = useState<WalletInfo | null>(null);
   const [status, setStatus] = useState<ConnectionStatus>('idle');
   const [connectedAddress, setConnectedAddress] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [mobile, setMobile] = useState(false);
+  const connectingRef = useRef(false); // Prevent double-connection attempts
 
   useEffect(() => {
     setMobile(isMobile());
   }, []);
 
+  // Reset state when modal opens
+  useEffect(() => {
+    if (isOpen && !connectedWallet) {
+      setSelectedWallet(null);
+      setStatus('idle');
+      setConnectedAddress('');
+      setErrorMessage('');
+      connectingRef.current = false;
+    }
+  }, [isOpen, connectedWallet]);
+
   if (!isOpen) return null;
 
+  // If already connected, show the connected wallet info with disconnect option
+  if (connectedWallet) {
+    const walletInfo = wallets.find(w => w.id === connectedWallet.type);
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }}>
+        <div className="w-full max-w-md rounded-2xl border border-[var(--border)] overflow-hidden animate-fade-in" style={{ background: 'var(--bg-card)' }}>
+          <div className="p-4 border-b border-[var(--border)] flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Wallet className="w-5 h-5 text-[var(--accent)]" />
+              <h3 className="font-semibold text-white text-sm sm:text-base">Wallet Connected</h3>
+            </div>
+            <button onClick={onClose} className="text-[var(--text-muted)] hover:text-white text-xl">&times;</button>
+          </div>
+
+          <div className="p-5">
+            <div className="flex items-center gap-3 mb-5">
+              {walletInfo && <WalletIconImg wallet={walletInfo} size={48} />}
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-semibold text-white">{walletInfo?.name || connectedWallet.type}</div>
+                <div className="text-xs font-mono text-[var(--text-muted)] truncate">{connectedWallet.address}</div>
+              </div>
+              <div className="w-3 h-3 rounded-full bg-[var(--green)]" />
+            </div>
+
+            <div className="rounded-xl p-4 mb-4" style={{ background: 'var(--bg-secondary)' }}>
+              <div className="text-[10px] text-[var(--text-muted)] mb-1.5">Wallet Address</div>
+              <div className="text-xs font-mono text-white break-all">{connectedWallet.address}</div>
+            </div>
+
+            <button
+              onClick={() => {
+                onDisconnect?.();
+                onClose();
+              }}
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-[var(--red)] border border-[var(--red)] hover:bg-[var(--red)] hover:text-white transition-all"
+              style={{ borderColor: 'rgba(246, 70, 93, 0.4)' }}
+            >
+              <LogOut className="w-4 h-4" />
+              Disconnect Wallet
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const handleConnect = async (wallet: WalletInfo) => {
+    // Prevent double-clicks / concurrent connection attempts
+    if (connectingRef.current) return;
+    connectingRef.current = true;
+
     setSelectedWallet(wallet);
     setStatus('connecting');
     setErrorMessage('');
 
     try {
       let address = '';
-      const isEVM = wallet.id === 'metamask' || wallet.id === 'trustwallet';
 
-      if (isEVM) {
-        const provider = getEVMProvider(wallet.id);
-        if (!provider) {
-          // On mobile, if provider not found, redirect to deep link
-          if (mobile) {
-            setStatus('not-installed');
-            return;
-          }
+      // All wallets now connect via EVM
+      const provider = getEVMProvider(wallet.id);
+      if (!provider) {
+        if (mobile) {
           setStatus('not-installed');
+          connectingRef.current = false;
           return;
         }
-        // First try eth_accounts (no popup) to see if already connected
-        let accounts = await provider.request({ method: 'eth_accounts' }) as string[];
+        setStatus('not-installed');
+        connectingRef.current = false;
+        return;
+      }
 
-        // If no accounts, request connection (triggers popup)
-        if (!accounts || accounts.length === 0) {
-          accounts = await provider.request({ method: 'eth_requestAccounts' }) as string[];
-        }
+      // First try eth_accounts (no popup) to see if already authorized
+      let accounts: string[] = [];
+      try {
+        accounts = await provider.request({ method: 'eth_accounts' }) as string[];
+      } catch {
+        // Some wallets might not support eth_accounts — that's fine
+      }
 
-        if (!accounts || accounts.length === 0) {
-          throw new Error('No accounts returned. Please unlock your wallet and try again.');
-        }
-        address = accounts[0];
-      } else {
-        // Solana wallets (Phantom, Solflare)
-        const provider = getSolanaProvider(wallet.id);
-        if (!provider) {
-          if (mobile) {
-            setStatus('not-installed');
-            return;
-          }
-          setStatus('not-installed');
-          return;
-        }
-        const response = await provider.connect();
-        address = response.publicKey.toString();
+      // If no existing accounts, request new connection
+      if (!accounts || accounts.length === 0) {
+        accounts = await provider.request({ method: 'eth_requestAccounts' }) as string[];
+      }
+
+      if (!accounts || accounts.length === 0) {
+        throw new Error('No accounts returned. Please unlock your wallet and try again.');
+      }
+
+      address = accounts[0];
+
+      // Validate we got an EVM address
+      if (!address.startsWith('0x')) {
+        throw new Error('Invalid address returned. Please make sure your wallet is set to an EVM network (Ethereum, Polygon, etc.).');
       }
 
       setConnectedAddress(address);
       setStatus('connected');
-      // Don't fire onConnected here — wait for "Continue to Deposit" click
     } catch (err: unknown) {
       console.error('Wallet connection failed:', err);
 
@@ -238,21 +268,24 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected }: Con
         message = err;
       }
 
-      // User rejected the request
+      // User rejected
       if (message.includes('User rejected') || message.includes('4001') || message.includes('rejected') || message.includes('denied')) {
         handleBack();
         return;
       }
 
-      // MetaMask "already pending" — show a friendlier message
+      // MetaMask "already pending" — the user has an open popup
       if (message.includes('already pending')) {
-        setErrorMessage('A connection request is already open. Please check your MetaMask extension and approve or reject the pending request, then try again.');
+        setErrorMessage('MetaMask already has a pending request. Please open the MetaMask extension (click the fox icon in your browser toolbar) and approve or reject the pending request.');
         setStatus('error');
+        connectingRef.current = false;
         return;
       }
 
       setErrorMessage(message);
       setStatus('error');
+    } finally {
+      connectingRef.current = false;
     }
   };
 
@@ -261,6 +294,7 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected }: Con
     setStatus('idle');
     setConnectedAddress('');
     setErrorMessage('');
+    connectingRef.current = false;
   };
 
   return (
@@ -312,7 +346,7 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected }: Con
 
           {status === 'connecting' && selectedWallet && (
             <div className="text-center py-8">
-              <div className="mx-auto mb-4">
+              <div className="mx-auto mb-4 flex justify-center">
                 <WalletIconImg wallet={selectedWallet} size={64} />
               </div>
               <div className="flex items-center justify-center gap-2 mb-3">
@@ -320,10 +354,7 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected }: Con
                 <span className="text-sm font-medium text-white">Connecting to {selectedWallet.name}...</span>
               </div>
               <p className="text-xs text-[var(--text-muted)]">
-                {mobile && isInWalletBrowser()
-                  ? 'Please approve the connection request'
-                  : 'Please approve the connection in your wallet extension'
-                }
+                Please approve the connection in your wallet extension
               </p>
               <div className="mt-6 flex flex-col items-center gap-2">
                 <div className="w-48 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--bg-tertiary)' }}>
@@ -368,20 +399,18 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected }: Con
 
           {status === 'not-installed' && selectedWallet && (
             <div className="text-center py-6">
-              <div className="mx-auto mb-4">
+              <div className="mx-auto mb-4 flex justify-center">
                 <WalletIconImg wallet={selectedWallet} size={64} />
               </div>
 
               {mobile ? (
                 <>
-                  {/* Mobile: Show deep link to open in wallet app */}
                   <h4 className="text-lg font-bold text-white mb-2">Open in {selectedWallet.name}</h4>
                   <p className="text-xs text-[var(--text-secondary)] mb-5 max-w-xs mx-auto">
                     Tap below to open this page in {selectedWallet.name}&apos;s in-app browser, where you can connect securely.
                   </p>
 
                   <div className="flex flex-col gap-2.5">
-                    {/* Deep link — opens the wallet app with this page */}
                     <a
                       href={getDeepLink(selectedWallet)}
                       className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90"
@@ -391,7 +420,6 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected }: Con
                       Open in {selectedWallet.name}
                     </a>
 
-                    {/* Fallback: download from app store */}
                     <a
                       href={selectedWallet.downloadUrl}
                       target="_blank"
@@ -411,7 +439,6 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected }: Con
                 </>
               ) : (
                 <>
-                  {/* Desktop: Show install extension prompt */}
                   <h4 className="text-lg font-bold text-white mb-1">{selectedWallet.name} Not Found</h4>
                   <p className="text-xs text-[var(--text-secondary)] mb-6">
                     The {selectedWallet.name} extension is not installed in your browser. Install it to connect.
@@ -443,12 +470,11 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected }: Con
                 <AlertTriangle className="w-8 h-8 text-[var(--red)]" />
               </div>
               <h4 className="text-lg font-bold text-white mb-1">Connection Failed</h4>
-              <p className="text-xs text-[var(--text-secondary)] mb-1">Could not connect to wallet. Please try again.</p>
+              <p className="text-xs text-[var(--text-secondary)] mb-1">Could not connect to wallet.</p>
               {errorMessage && (
-                <p className="text-[10px] text-[var(--text-muted)] mb-4 max-w-xs mx-auto break-all">{errorMessage}</p>
+                <p className="text-xs text-[var(--text-muted)] mb-4 max-w-xs mx-auto leading-relaxed">{errorMessage}</p>
               )}
 
-              {/* On mobile, offer to open in wallet app as fallback */}
               {mobile && selectedWallet && (
                 <a
                   href={getDeepLink(selectedWallet)}

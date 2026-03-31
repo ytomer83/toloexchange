@@ -401,7 +401,7 @@ export default function SwapPage() {
 
   // Fetch balance when wallet connected
   useEffect(() => {
-    if (!wallet.connected || !wallet.address || !wallet.isSupported || !wallet.address.startsWith('0x')) {
+    if (!wallet.connected || !wallet.address || !wallet.isSupported) {
       setFromBalance(null);
       return;
     }
@@ -487,19 +487,9 @@ export default function SwapPage() {
     }
   };
 
-  // Check if wallet address is an EVM address (starts with 0x)
-  const isEVMAddress = wallet.address.startsWith('0x');
-
   // Execute swap
   const handleSwap = async () => {
     if (!wallet.connected) {
-      wallet.setOpenConnectModal(true);
-      return;
-    }
-
-    // Solana wallets (Phantom/Solflare) return non-0x addresses — can't use for EVM swaps
-    if (!isEVMAddress) {
-      wallet.disconnect();
       wallet.setOpenConnectModal(true);
       return;
     }
@@ -573,9 +563,7 @@ export default function SwapPage() {
   let ctaDisabled = false;
 
   if (wallet.connected) {
-    if (!isEVMAddress) {
-      ctaText = 'Connect EVM Wallet to Swap';
-    } else if (!wallet.isSupported) {
+    if (!wallet.isSupported) {
       ctaText = 'Switch to Supported Network';
     } else if (numFromAmount <= 0) {
       ctaText = 'Enter an amount';
@@ -716,20 +704,13 @@ export default function SwapPage() {
               </div>
             )}
 
-            {/* Solana wallet warning */}
-            {wallet.connected && !isEVMAddress && (
-              <div className="mt-3 p-3 rounded-xl text-xs text-center" style={{ background: 'rgba(255, 170, 0, 0.08)', border: '1px solid rgba(255, 170, 0, 0.2)' }}>
-                <span className="text-[#ffaa00]">⚠ Solana wallets can&apos;t be used for swaps. Please connect MetaMask or Trust Wallet.</span>
-              </div>
-            )}
-
             {/* CTA Button */}
             <button
               onClick={handleSwap}
               className="w-full mt-4 py-4 rounded-xl text-base font-semibold btn-primary"
-              disabled={ctaDisabled || (!platformConfigured && wallet.connected && isEVMAddress)}
+              disabled={ctaDisabled || (!platformConfigured && wallet.connected)}
             >
-              {!platformConfigured && wallet.connected && isEVMAddress ? 'Platform wallet not configured' : ctaText}
+              {!platformConfigured && wallet.connected ? 'Platform wallet not configured' : ctaText}
             </button>
           </div>
         </div>

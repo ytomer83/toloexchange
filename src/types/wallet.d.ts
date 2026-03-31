@@ -3,10 +3,12 @@
 interface EthereumProvider {
   isMetaMask?: boolean;
   isTrust?: boolean;
+  isPhantom?: boolean;
   providers?: EthereumProvider[];
   request: (args: { method: string; params?: unknown[] }) => Promise<any>;
-  on: (event: string, handler: (...args: any[]) => void) => void;
-  removeListener: (event: string, handler: (...args: any[]) => void) => void;
+  on?: (event: string, handler: (...args: any[]) => void) => void;
+  removeListener?: (event: string, handler: (...args: any[]) => void) => void;
+  selectedAddress?: string | null;
 }
 
 interface SolanaProvider {
@@ -23,5 +25,6 @@ interface Window {
   solflare?: SolanaProvider;
   phantom?: {
     solana?: SolanaProvider;
+    ethereum?: EthereumProvider;
   };
 }

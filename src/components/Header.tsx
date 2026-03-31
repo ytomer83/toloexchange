@@ -112,6 +112,10 @@ export default function Header() {
         onConnected={(walletType, address) => {
           wallet.connect(walletType, address);
         }}
+        connectedWallet={wallet.connected ? { type: wallet.walletType, address: wallet.address } : null}
+        onDisconnect={() => {
+          wallet.disconnect();
+        }}
       />
     </>
   );

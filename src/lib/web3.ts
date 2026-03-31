@@ -35,10 +35,31 @@ export function getPlatformWallet(): string {
 // Provider helpers
 // ========================================
 
-/** Get ethers BrowserProvider from window.ethereum */
+/** Get ethers BrowserProvider from window.ethereum or wallet-specific provider */
 export function getBrowserProvider(): BrowserProvider | null {
-  if (typeof window === 'undefined' || !window.ethereum) return null;
-  return new BrowserProvider(window.ethereum);
+  if (typeof window === 'undefined') return null;
+
+  // Check for Phantom's EVM provider first (it's separate from MetaMask's)
+  // Read saved wallet type to know which provider to use
+  let provider: EthereumProvider | undefined;
+  try {
+    const saved = localStorage.getItem('tolo_wallet');
+    if (saved) {
+      const { walletType } = JSON.parse(saved);
+      if (walletType === 'phantom' && window.phantom?.ethereum) {
+        provider = window.phantom.ethereum;
+      }
+    }
+  } catch {
+    // ignore
+  }
+
+  if (!provider) {
+    provider = window.ethereum;
+  }
+
+  if (!provider) return null;
+  return new BrowserProvider(provider);
 }
 
 /** Get current chain ID */
