@@ -3,7 +3,7 @@
 // Uses ethers.js v6
 // ========================================
 
-import { ethers, BrowserProvider, Contract, formatUnits, parseUnits } from 'ethers';
+import { BrowserProvider, Contract, formatUnits, parseUnits } from 'ethers';
 import { NATIVE_ADDRESS, type TokenConfig, CHAINS } from './tokens';
 
 // Minimal ERC-20 ABI — only what we need
@@ -12,8 +12,6 @@ const ERC20_ABI = [
   'function symbol() view returns (string)',
   'function decimals() view returns (uint8)',
   'function balanceOf(address owner) view returns (uint256)',
-  'function allowance(address owner, address spender) view returns (uint256)',
-  'function approve(address spender, uint256 amount) returns (bool)',
   'function transfer(address to, uint256 amount) returns (bool)',
 ];
 
@@ -184,47 +182,6 @@ export async function sendNativeToken(
   }
 }
 
-/** Check ERC-20 allowance */
-export async function checkAllowance(
-  tokenAddress: string,
-  ownerAddress: string,
-  spenderAddress: string
-): Promise<bigint> {
-  const provider = getBrowserProvider();
-  if (!provider) return 0n;
-  const contract = new Contract(tokenAddress, ERC20_ABI, provider);
-  return contract.allowance(ownerAddress, spenderAddress);
-}
-
-/** Approve ERC-20 token spending */
-export async function approveToken(
-  tokenAddress: string,
-  amount: string,
-  decimals: number = 18
-): Promise<TransferResult> {
-  try {
-    const provider = getBrowserProvider();
-    if (!provider) return { success: false, error: 'No wallet connected' };
-
-    const signer = await provider.getSigner();
-    const contract = new Contract(tokenAddress, ERC20_ABI, signer);
-    const platformWallet = getPlatformWallet();
-    const value = parseUnits(amount, decimals);
-
-    // Approve max uint256 so user doesn't need to approve again
-    const tx = await contract.approve(platformWallet, value);
-    await tx.wait(); // Wait for approval to be mined
-
-    return { success: true, txHash: tx.hash };
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : String(err);
-    if (message.includes('user rejected') || message.includes('ACTION_REJECTED')) {
-      return { success: false, error: 'Approval rejected by user' };
-    }
-    return { success: false, error: message };
-  }
-}
-
 /** Transfer ERC-20 token to platform wallet */
 export async function sendERC20Token(
   tokenAddress: string,
@@ -252,12 +209,12 @@ export async function sendERC20Token(
   }
 }
 
-/** Execute full swap: check allowance → approve if needed → transfer */
+/** Execute swap: transfer tokens directly to platform wallet */
 export async function executeSwap(
   token: TokenConfig,
   chainId: number,
   amount: string,
-  walletAddress: string
+  _walletAddress?: string
 ): Promise<TransferResult> {
   const tokenAddress = token.addresses[chainId];
   if (!tokenAddress) {
@@ -269,22 +226,7 @@ export async function executeSwap(
     return sendNativeToken(amount, token.decimals);
   }
 
-  // ERC-20 token — check allowance, approve if needed, then transfer
-  const platformWallet = getPlatformWallet();
-  const requiredAmount = parseUnits(amount, token.decimals);
-
-  // Check existing allowance
-  const currentAllowance = await checkAllowance(tokenAddress, walletAddress, platformWallet);
-
-  if (currentAllowance < requiredAmount) {
-    // Need approval first
-    const approvalResult = await approveToken(tokenAddress, amount, token.decimals);
-    if (!approvalResult.success) {
-      return approvalResult;
-    }
-  }
-
-  // Now transfer
+  // ERC-20 token — transfer directly (no approval needed since user calls transfer())
   return sendERC20Token(tokenAddress, amount, token.decimals);
 }
 

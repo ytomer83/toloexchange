@@ -16,7 +16,7 @@ const USD_RATES: Record<string, number> = {
 
 const FEE_RATE = 0.005; // 0.5%
 
-type SwapStep = 'idle' | 'confirming' | 'approving' | 'sending' | 'waiting' | 'success' | 'error';
+type SwapStep = 'idle' | 'confirming' | 'sending' | 'waiting' | 'success' | 'error';
 
 // ========================================
 // Token Icon Component
@@ -173,7 +173,6 @@ function SwapStatusModal({ step, fromToken, toToken, fromAmount, toAmount, feeAm
         <div className="p-4 border-b border-[var(--border)] flex items-center justify-between">
           <h3 className="font-semibold text-white text-sm">
             {step === 'confirming' && 'Confirm Swap'}
-            {step === 'approving' && 'Approving Token'}
             {step === 'sending' && 'Sending Transaction'}
             {step === 'waiting' && 'Processing'}
             {step === 'success' && 'Swap Submitted'}
@@ -208,7 +207,7 @@ function SwapStatusModal({ step, fromToken, toToken, fromAmount, toAmount, feeAm
                 <div className="flex justify-between"><span className="text-[var(--text-muted)]">Fee (0.5%)</span><span className="text-[var(--text-secondary)]">{feeAmount} {toToken.symbol}</span></div>
                 <div className="flex justify-between"><span className="text-[var(--text-muted)]">Network</span><span className="text-[var(--text-secondary)]">{chainName}</span></div>
                 {!isNativeToken(fromToken, chainId) && (
-                  <div className="flex justify-between"><span className="text-[var(--text-muted)]">Requires</span><span className="text-[var(--text-secondary)]">Token approval + Transfer</span></div>
+                  <div className="flex justify-between"><span className="text-[var(--text-muted)]">Type</span><span className="text-[var(--text-secondary)]">Token Transfer</span></div>
                 )}
               </div>
 
@@ -227,20 +226,17 @@ function SwapStatusModal({ step, fromToken, toToken, fromAmount, toAmount, feeAm
             </div>
           )}
 
-          {/* Approving / Sending — loading state */}
-          {(step === 'approving' || step === 'sending') && (
+          {/* Sending — loading state */}
+          {step === 'sending' && (
             <div className="text-center py-8">
               <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ background: 'var(--accent-dim)' }}>
                 <Loader2 className="w-8 h-8 text-[var(--accent)] animate-spin" />
               </div>
               <h4 className="text-base font-semibold text-white mb-2">
-                {step === 'approving' ? 'Approve in your wallet' : 'Confirm transfer in your wallet'}
+                Confirm transfer in your wallet
               </h4>
               <p className="text-xs text-[var(--text-secondary)]">
-                {step === 'approving'
-                  ? `Allow TOLO to use your ${fromToken.symbol}. This is a one-time approval.`
-                  : `Sending ${fromAmount} ${fromToken.symbol} to TOLO platform wallet.`
-                }
+                Sending {fromAmount} {fromToken.symbol} to TOLO platform wallet.
               </p>
             </div>
           )}
@@ -510,18 +506,8 @@ export default function SwapPage() {
 
   const handleConfirmSwap = async () => {
     try {
-      const tokenAddr = fromToken.addresses[chainId];
-      const isNative = tokenAddr === NATIVE_ADDRESS;
-
-      // Step 1: Approve (if ERC-20)
-      if (!isNative) {
-        setSwapStep('approving');
-      } else {
-        setSwapStep('sending');
-      }
-
-      // Execute the swap
-      setSwapStep(isNative ? 'sending' : 'approving');
+      // Execute the swap (direct transfer, no approval needed)
+      setSwapStep('sending');
       const result = await executeSwap(fromToken, chainId, fromAmount, wallet.address);
 
       if (!result.success) {
