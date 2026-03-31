@@ -3,18 +3,12 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { Menu, X, Wallet } from 'lucide-react';
-import ConnectWalletModal, { ConnectWalletButton } from './ConnectWallet';
+import ConnectWalletModal from './ConnectWallet';
+import { useWallet } from '@/context/WalletContext';
 
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [walletModalOpen, setWalletModalOpen] = useState(false);
-  const [walletConnected, setWalletConnected] = useState(false);
-  const [walletAddress, setWalletAddress] = useState('');
-
-  const handleWalletConnected = (walletType: string, address: string) => {
-    setWalletConnected(true);
-    setWalletAddress(address);
-  };
+  const wallet = useWallet();
 
   return (
     <>
@@ -47,11 +41,35 @@ export default function Header() {
 
             {/* Right side */}
             <div className="flex items-center gap-3">
-              <ConnectWalletButton
-                onClick={() => setWalletModalOpen(true)}
-                connected={walletConnected}
-                address={walletAddress}
-              />
+              {/* Chain indicator */}
+              {wallet.connected && wallet.chainName && (
+                <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs border border-[var(--border)]" style={{ background: 'var(--bg-secondary)' }}>
+                  <div className={`w-2 h-2 rounded-full ${wallet.isSupported ? 'bg-[var(--green)]' : 'bg-[var(--red)]'}`} />
+                  <span className="text-[var(--text-secondary)]">{wallet.chainName}</span>
+                </div>
+              )}
+
+              {/* Connect / Connected button */}
+              {wallet.connected ? (
+                <button
+                  onClick={() => wallet.setOpenConnectModal(true)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors border border-[var(--green)]"
+                  style={{ background: 'rgba(33, 193, 135, 0.1)' }}
+                >
+                  <div className="w-2 h-2 rounded-full bg-[var(--green)]" />
+                  <span className="text-[var(--green)]">{wallet.address.slice(0, 6)}...{wallet.address.slice(-4)}</span>
+                </button>
+              ) : (
+                <button
+                  onClick={() => wallet.setOpenConnectModal(true)}
+                  className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg text-xs font-semibold text-white transition-all hover:opacity-90"
+                  style={{ background: 'var(--accent)' }}
+                >
+                  <Wallet className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Connect Wallet</span>
+                  <span className="sm:hidden">Connect</span>
+                </button>
+              )}
 
               {/* Mobile menu button */}
               <button
@@ -89,9 +107,11 @@ export default function Header() {
       </header>
 
       <ConnectWalletModal
-        isOpen={walletModalOpen}
-        onClose={() => setWalletModalOpen(false)}
-        onConnected={handleWalletConnected}
+        isOpen={wallet.openConnectModal}
+        onClose={() => wallet.setOpenConnectModal(false)}
+        onConnected={(walletType, address) => {
+          wallet.connect(walletType, address);
+        }}
       />
     </>
   );
