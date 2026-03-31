@@ -188,9 +188,16 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected }: Con
           setStatus('not-installed');
           return;
         }
-        const accounts = await provider.request({ method: 'eth_requestAccounts' }) as string[];
+        // First try eth_accounts (no popup) to see if already connected
+        let accounts = await provider.request({ method: 'eth_accounts' }) as string[];
+
+        // If no accounts, request connection (triggers popup)
         if (!accounts || accounts.length === 0) {
-          throw new Error('No accounts returned');
+          accounts = await provider.request({ method: 'eth_requestAccounts' }) as string[];
+        }
+
+        if (!accounts || accounts.length === 0) {
+          throw new Error('No accounts returned. Please unlock your wallet and try again.');
         }
         address = accounts[0];
       } else {

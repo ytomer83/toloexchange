@@ -499,8 +499,8 @@ export default function SwapPage() {
 
     // Solana wallets (Phantom/Solflare) return non-0x addresses — can't use for EVM swaps
     if (!isEVMAddress) {
-      setSwapError('Solana wallets are not supported for swaps yet. Please connect an EVM wallet (MetaMask or Trust Wallet) to swap tokens.');
-      setSwapStep('error');
+      wallet.disconnect();
+      wallet.setOpenConnectModal(true);
       return;
     }
 
@@ -573,7 +573,9 @@ export default function SwapPage() {
   let ctaDisabled = false;
 
   if (wallet.connected) {
-    if (!wallet.isSupported) {
+    if (!isEVMAddress) {
+      ctaText = 'Connect EVM Wallet to Swap';
+    } else if (!wallet.isSupported) {
       ctaText = 'Switch to Supported Network';
     } else if (numFromAmount <= 0) {
       ctaText = 'Enter an amount';
@@ -714,13 +716,20 @@ export default function SwapPage() {
               </div>
             )}
 
+            {/* Solana wallet warning */}
+            {wallet.connected && !isEVMAddress && (
+              <div className="mt-3 p-3 rounded-xl text-xs text-center" style={{ background: 'rgba(255, 170, 0, 0.08)', border: '1px solid rgba(255, 170, 0, 0.2)' }}>
+                <span className="text-[#ffaa00]">⚠ Solana wallets can&apos;t be used for swaps. Please connect MetaMask or Trust Wallet.</span>
+              </div>
+            )}
+
             {/* CTA Button */}
             <button
               onClick={handleSwap}
               className="w-full mt-4 py-4 rounded-xl text-base font-semibold btn-primary"
-              disabled={ctaDisabled || (!platformConfigured && wallet.connected)}
+              disabled={ctaDisabled || (!platformConfigured && wallet.connected && isEVMAddress)}
             >
-              {!platformConfigured && wallet.connected ? 'Platform wallet not configured' : ctaText}
+              {!platformConfigured && wallet.connected && isEVMAddress ? 'Platform wallet not configured' : ctaText}
             </button>
           </div>
         </div>
