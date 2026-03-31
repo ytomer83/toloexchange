@@ -245,10 +245,26 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected }: Con
       // Don't fire onConnected here — wait for "Continue to Deposit" click
     } catch (err: unknown) {
       console.error('Wallet connection failed:', err);
-      const message = err instanceof Error ? err.message : String(err);
+
+      // Extract meaningful error message
+      let message = 'Connection failed. Please try again.';
+      if (err instanceof Error) {
+        message = err.message;
+      } else if (typeof err === 'object' && err !== null) {
+        const errObj = err as Record<string, unknown>;
+        if (typeof errObj.message === 'string') {
+          message = errObj.message;
+        } else if (typeof errObj.reason === 'string') {
+          message = errObj.reason;
+        } else if (typeof errObj.code === 'number') {
+          message = `Wallet error (code: ${errObj.code})`;
+        }
+      } else if (typeof err === 'string') {
+        message = err;
+      }
 
       // User rejected the request
-      if (message.includes('User rejected') || message.includes('4001') || message.includes('rejected')) {
+      if (message.includes('User rejected') || message.includes('4001') || message.includes('rejected') || message.includes('denied')) {
         handleBack();
         return;
       }

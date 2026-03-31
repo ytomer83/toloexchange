@@ -24,17 +24,27 @@ type SwapStep = 'idle' | 'confirming' | 'approving' | 'sending' | 'waiting' | 's
 function TokenIcon({ token, size = 36 }: { token: TokenConfig; size?: number }) {
   return (
     <div
-      className="rounded-full flex items-center justify-center font-bold shrink-0"
+      className="rounded-full flex items-center justify-center font-bold shrink-0 overflow-hidden"
       style={{
         width: size,
         height: size,
-        background: `${token.color}22`,
-        color: token.color,
-        fontSize: size * 0.4,
-        border: `1.5px solid ${token.color}33`,
+        background: `${token.color}18`,
+        border: `1.5px solid ${token.color}25`,
       }}
     >
-      {token.icon}
+      <img
+        src={token.image}
+        alt={token.symbol}
+        width={size * 0.75}
+        height={size * 0.75}
+        className="object-contain"
+        onError={(e) => {
+          // Fallback to text icon if image fails
+          const target = e.target as HTMLImageElement;
+          target.style.display = 'none';
+          target.parentElement!.innerHTML = `<span style="font-size:${size * 0.4}px;color:${token.color}">${token.icon}</span>`;
+        }}
+      />
     </div>
   );
 }

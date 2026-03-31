@@ -104,6 +104,7 @@ export interface TokenConfig {
   symbol: string;
   name: string;
   icon: string;
+  image: string; // URL to token logo
   color: string;
   decimals: number; // default decimals
   popular?: boolean;
@@ -116,6 +117,7 @@ export const TOKENS: TokenConfig[] = [
     symbol: 'ETH',
     name: 'Ethereum',
     icon: 'Ξ',
+    image: 'https://assets.coingecko.com/coins/images/279/small/ethereum.png',
     color: '#627eea',
     decimals: 18,
     popular: true,
@@ -130,6 +132,7 @@ export const TOKENS: TokenConfig[] = [
     symbol: 'USDC',
     name: 'USD Coin',
     icon: '$',
+    image: 'https://assets.coingecko.com/coins/images/6319/small/usdc.png',
     color: '#2775ca',
     decimals: 6,
     popular: true,
@@ -147,6 +150,7 @@ export const TOKENS: TokenConfig[] = [
     symbol: 'USDT',
     name: 'Tether',
     icon: '₮',
+    image: 'https://assets.coingecko.com/coins/images/325/small/Tether.png',
     color: '#26a17b',
     decimals: 6,
     popular: true,
@@ -163,6 +167,7 @@ export const TOKENS: TokenConfig[] = [
     symbol: 'DAI',
     name: 'Dai',
     icon: '◈',
+    image: 'https://assets.coingecko.com/coins/images/9956/small/Badge_Dai.png',
     color: '#f5ac37',
     decimals: 18,
     addresses: {
@@ -176,6 +181,7 @@ export const TOKENS: TokenConfig[] = [
     symbol: 'WETH',
     name: 'Wrapped Ether',
     icon: 'Ξ',
+    image: 'https://assets.coingecko.com/coins/images/2518/small/weth.png',
     color: '#627eea',
     decimals: 18,
     addresses: {
@@ -189,6 +195,7 @@ export const TOKENS: TokenConfig[] = [
     symbol: 'BNB',
     name: 'BNB',
     icon: '⬡',
+    image: 'https://assets.coingecko.com/coins/images/825/small/bnb-icon2_2x.png',
     color: '#f3ba2f',
     decimals: 18,
     popular: true,
@@ -200,6 +207,7 @@ export const TOKENS: TokenConfig[] = [
     symbol: 'POL',
     name: 'Polygon',
     icon: '⬡',
+    image: 'https://assets.coingecko.com/coins/images/4713/small/polygon.png',
     color: '#8247e5',
     decimals: 18,
     addresses: {
@@ -210,6 +218,7 @@ export const TOKENS: TokenConfig[] = [
     symbol: 'AVAX',
     name: 'Avalanche',
     icon: '▲',
+    image: 'https://assets.coingecko.com/coins/images/12559/small/Avalanche_Circle_RedWhite_Trans.png',
     color: '#e84142',
     decimals: 18,
     addresses: {
@@ -220,6 +229,7 @@ export const TOKENS: TokenConfig[] = [
     symbol: 'LINK',
     name: 'Chainlink',
     icon: '⬡',
+    image: 'https://assets.coingecko.com/coins/images/877/small/chainlink-new-logo.png',
     color: '#2a5ada',
     decimals: 18,
     addresses: {
@@ -232,6 +242,7 @@ export const TOKENS: TokenConfig[] = [
     symbol: 'UNI',
     name: 'Uniswap',
     icon: '🦄',
+    image: 'https://assets.coingecko.com/coins/images/12504/small/uni.jpg',
     color: '#ff007a',
     decimals: 18,
     addresses: {
@@ -244,6 +255,7 @@ export const TOKENS: TokenConfig[] = [
     symbol: 'AAVE',
     name: 'Aave',
     icon: '👻',
+    image: 'https://assets.coingecko.com/coins/images/12645/small/aave-token-round.png',
     color: '#b6509e',
     decimals: 18,
     addresses: {
@@ -255,6 +267,7 @@ export const TOKENS: TokenConfig[] = [
     symbol: 'ARB',
     name: 'Arbitrum',
     icon: '🔵',
+    image: 'https://assets.coingecko.com/coins/images/16547/small/arb.jpg',
     color: '#28a0f0',
     decimals: 18,
     addresses: {
@@ -265,6 +278,7 @@ export const TOKENS: TokenConfig[] = [
     symbol: 'OP',
     name: 'Optimism',
     icon: '🔴',
+    image: 'https://assets.coingecko.com/coins/images/25244/small/Optimism.png',
     color: '#ff0420',
     decimals: 18,
     addresses: {
