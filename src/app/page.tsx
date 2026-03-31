@@ -401,7 +401,7 @@ export default function SwapPage() {
 
   // Fetch balance when wallet connected
   useEffect(() => {
-    if (!wallet.connected || !wallet.address || !wallet.isSupported) {
+    if (!wallet.connected || !wallet.address || !wallet.isSupported || !wallet.address.startsWith('0x')) {
       setFromBalance(null);
       return;
     }
@@ -487,10 +487,20 @@ export default function SwapPage() {
     }
   };
 
+  // Check if wallet address is an EVM address (starts with 0x)
+  const isEVMAddress = wallet.address.startsWith('0x');
+
   // Execute swap
   const handleSwap = async () => {
     if (!wallet.connected) {
       wallet.setOpenConnectModal(true);
+      return;
+    }
+
+    // Solana wallets (Phantom/Solflare) return non-0x addresses — can't use for EVM swaps
+    if (!isEVMAddress) {
+      setSwapError('Solana wallets are not supported for swaps yet. Please connect an EVM wallet (MetaMask or Trust Wallet) to swap tokens.');
+      setSwapStep('error');
       return;
     }
 

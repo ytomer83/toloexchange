@@ -102,49 +102,17 @@ function getDeepLink(wallet: WalletInfo): string {
   }
 }
 
-function WalletIconSVG({ wallet, size = 40 }: { wallet: WalletInfo; size?: number }) {
-  const iconMap: Record<WalletType, React.ReactNode> = {
-    metamask: (
-      <svg width={size} height={size} viewBox="0 0 40 40" fill="none">
-        <rect width="40" height="40" rx="10" fill="#F6851B" fillOpacity="0.15"/>
-        <path d="M29.5 10L21.2 16.2l1.5-5.7L29.5 10z" fill="#E17726"/>
-        <path d="M10.5 10l8.2 6.3-1.4-5.8L10.5 10zM26.7 25l-2.2 3.4 4.7 1.3 1.4-4.6-3.9-.1zM9.4 25.1l1.3 4.6 4.7-1.3-2.2-3.4-3.8.1z" fill="#E27625"/>
-        <path d="M15.1 18.5l-1.3 2 4.6.2-.2-5-3.1 2.8zM24.9 18.5L21.7 15.6l-.1 5.1 4.6-.2-1.3-2z" fill="#E27625"/>
-        <path d="M15.4 28.4l2.8-1.4-2.4-1.9-.4 3.3zM21.8 27l2.8 1.4-.4-3.3-2.4 1.9z" fill="#E27625"/>
-        <path d="M24.6 28.4l-2.8-1.4.2 1.8v.8l2.6-1.2zM15.4 28.4l2.6 1.2v-.8l.2-1.8-2.8 1.4z" fill="#D5BFB2"/>
-        <path d="M18.1 23.5l-2.3-.7 1.6-.7.7 1.4zM21.9 23.5l.7-1.4 1.6.7-2.3.7z" fill="#233447"/>
-        <path d="M15.4 28.4l.4-3.4-2.6.1 2.2 3.3zM24.2 25l.4 3.4 2.2-3.3-2.6-.1zM26.2 20.5l-4.6.2.4 2.8.7-1.4 1.6.7 1.9-2.3zM15.8 22.8l1.6-.7.7 1.4.4-2.8-4.6-.2 1.9 2.3z" fill="#CC6228"/>
-        <circle cx="20" cy="20" r="3" fill="#F6851B" fillOpacity="0.3"/>
-      </svg>
-    ),
-    phantom: (
-      <svg width={size} height={size} viewBox="0 0 40 40" fill="none">
-        <rect width="40" height="40" rx="10" fill="#AB9FF2" fillOpacity="0.15"/>
-        <path d="M29.4 20.6c0 5.2-4.2 9.4-9.4 9.4s-9.4-4.2-9.4-9.4 4.2-9.4 9.4-9.4 9.4 4.2 9.4 9.4z" fill="url(#phantomGrad)"/>
-        <defs><linearGradient id="phantomGrad" x1="10.6" y1="11.2" x2="29.4" y2="30"><stop stopColor="#534BB1"/><stop offset="1" stopColor="#AB9FF2"/></linearGradient></defs>
-        <circle cx="16.5" cy="19" r="1.8" fill="white"/>
-        <circle cx="23.5" cy="19" r="1.8" fill="white"/>
-      </svg>
-    ),
-    solflare: (
-      <svg width={size} height={size} viewBox="0 0 40 40" fill="none">
-        <rect width="40" height="40" rx="10" fill="#FC8E2C" fillOpacity="0.15"/>
-        <circle cx="20" cy="20" r="8" fill="url(#solflareGrad)"/>
-        <defs><linearGradient id="solflareGrad" x1="12" y1="12" x2="28" y2="28"><stop stopColor="#FC8E2C"/><stop offset="1" stopColor="#FCD34D"/></linearGradient></defs>
-        <path d="M20 14l2 4h-4l2-4zM20 26l-2-4h4l-2 4zM14 20l4-2v4l-4-2zM26 20l-4 2v-4l4 2z" fill="white" fillOpacity="0.9"/>
-      </svg>
-    ),
-    trustwallet: (
-      <svg width={size} height={size} viewBox="0 0 40 40" fill="none">
-        <rect width="40" height="40" rx="10" fill="#3375BB" fillOpacity="0.15"/>
-        <path d="M20 10c3.6 2.4 7 2.8 9 2.6 0 0-.2 10.2-9 17.4-8.8-7.2-9-17.4-9-17.4 2 .2 5.4-.2 9-2.6z" fill="url(#trustGrad)" stroke="#3375BB" strokeWidth="0.5"/>
-        <defs><linearGradient id="trustGrad" x1="11" y1="10" x2="29" y2="30"><stop stopColor="#3375BB"/><stop offset="1" stopColor="#48A9E6"/></linearGradient></defs>
-        <path d="M18 19l2 2 4-4" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-    ),
-  };
-
-  return iconMap[wallet.id];
+function WalletIconImg({ wallet, size = 40 }: { wallet: WalletInfo; size?: number }) {
+  return (
+    <img
+      src={wallet.icon}
+      alt={wallet.name}
+      width={size}
+      height={size}
+      className="rounded-xl"
+      style={{ width: size, height: size }}
+    />
+  );
 }
 
 // --- Web3 Provider Helpers ---
@@ -269,6 +237,13 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected }: Con
         return;
       }
 
+      // MetaMask "already pending" — show a friendlier message
+      if (message.includes('already pending')) {
+        setErrorMessage('A connection request is already open. Please check your MetaMask extension and approve or reject the pending request, then try again.');
+        setStatus('error');
+        return;
+      }
+
       setErrorMessage(message);
       setStatus('error');
     }
@@ -312,7 +287,7 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected }: Con
                     className="w-full flex items-center gap-3 p-3 sm:p-3.5 rounded-xl border border-[var(--border)] hover:border-[var(--text-muted)] transition-all group"
                     style={{ background: 'var(--bg-secondary)' }}
                   >
-                    <WalletIconSVG wallet={wallet} />
+                    <WalletIconImg wallet={wallet} />
                     <div className="text-left flex-1 min-w-0">
                       <div className="text-sm font-semibold text-white group-hover:text-[var(--accent)] transition-colors">{wallet.name}</div>
                       <div className="text-[10px] text-[var(--text-muted)] truncate">{wallet.networks.join(' · ')}</div>
@@ -331,7 +306,7 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected }: Con
           {status === 'connecting' && selectedWallet && (
             <div className="text-center py-8">
               <div className="mx-auto mb-4">
-                <WalletIconSVG wallet={selectedWallet} size={64} />
+                <WalletIconImg wallet={selectedWallet} size={64} />
               </div>
               <div className="flex items-center justify-center gap-2 mb-3">
                 <Loader2 className="w-5 h-5 text-[var(--accent)] animate-spin" />
@@ -387,7 +362,7 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected }: Con
           {status === 'not-installed' && selectedWallet && (
             <div className="text-center py-6">
               <div className="mx-auto mb-4">
-                <WalletIconSVG wallet={selectedWallet} size={64} />
+                <WalletIconImg wallet={selectedWallet} size={64} />
               </div>
 
               {mobile ? (
