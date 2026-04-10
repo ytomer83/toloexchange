@@ -3,8 +3,21 @@
 // Uses ethers.js v6
 // ========================================
 
-import { BrowserProvider, Contract, formatUnits, parseUnits } from 'ethers';
+import { BrowserProvider, Contract, JsonRpcProvider, formatUnits, parseUnits } from 'ethers';
 import { NATIVE_ADDRESS, type TokenConfig, CHAINS } from './tokens';
+
+// Cache read-only JsonRpcProviders per chain to avoid recreating them
+const readProviderCache: Record<number, JsonRpcProvider> = {};
+
+/** Get a read-only RPC provider for a specific chain */
+function getReadProvider(chainId: number): JsonRpcProvider | null {
+  const chain = CHAINS[chainId];
+  if (!chain) return null;
+  if (!readProviderCache[chainId]) {
+    readProviderCache[chainId] = new JsonRpcProvider(chain.rpcUrl, chainId);
+  }
+  return readProviderCache[chainId];
+}
 
 // Minimal ERC-20 ABI, only what we need
 const ERC20_ABI = [
@@ -108,20 +121,44 @@ export async function switchChain(chainId: number): Promise<boolean> {
 // Balance operations
 // ========================================
 
-/** Get native token balance (ETH, BNB, POL, AVAX) */
-export async function getNativeBalance(address: string): Promise<string> {
+/** Get native token balance (ETH, BNB, POL, AVAX) for a specific chain via public RPC */
+export async function getNativeBalance(address: string, chainId: number): Promise<string> {
+  const rpc = getReadProvider(chainId);
+  if (rpc) {
+    try {
+      const balance = await rpc.getBalance(address);
+      return formatUnits(balance, 18);
+    } catch {
+      // fall through to wallet provider
+    }
+  }
   const provider = getBrowserProvider();
   if (!provider) return '0';
   const balance = await provider.getBalance(address);
   return formatUnits(balance, 18);
 }
 
-/** Get ERC-20 token balance */
+/** Get ERC-20 token balance for a specific chain via public RPC */
 export async function getTokenBalance(
   tokenAddress: string,
   walletAddress: string,
-  decimals: number = 18
+  decimals: number = 18,
+  chainId?: number
 ): Promise<string> {
+  // Prefer a deterministic public RPC for the target chain so we don't
+  // depend on whatever chain the injected wallet is currently on.
+  if (chainId !== undefined) {
+    const rpc = getReadProvider(chainId);
+    if (rpc) {
+      try {
+        const contract = new Contract(tokenAddress, ERC20_ABI, rpc);
+        const balance = await contract.balanceOf(walletAddress);
+        return formatUnits(balance, decimals);
+      } catch {
+        // fall through to wallet provider
+      }
+    }
+  }
   const provider = getBrowserProvider();
   if (!provider) return '0';
   const contract = new Contract(tokenAddress, ERC20_ABI, provider);
@@ -139,9 +176,9 @@ export async function getBalance(
   if (!address) return '0';
 
   if (address === NATIVE_ADDRESS) {
-    return getNativeBalance(walletAddress);
+    return getNativeBalance(walletAddress, chainId);
   }
-  return getTokenBalance(address, walletAddress, token.decimals);
+  return getTokenBalance(address, walletAddress, token.decimals, chainId);
 }
 
 // ========================================
