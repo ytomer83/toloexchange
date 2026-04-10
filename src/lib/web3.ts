@@ -157,15 +157,28 @@ export interface TransferResult {
 /** Send native token (ETH/BNB/POL/AVAX) to platform wallet */
 export async function sendNativeToken(
   amount: string,
-  decimals: number = 18
+  decimals: number = 18,
+  symbol: string = 'tokens'
 ): Promise<TransferResult> {
   try {
     const provider = getBrowserProvider();
     if (!provider) return { success: false, error: 'No wallet connected' };
 
     const signer = await provider.getSigner();
+    const signerAddress = await signer.getAddress();
     const platformWallet = getPlatformWallet();
     const value = parseUnits(amount, decimals);
+
+    // Pre-check on-chain balance
+    try {
+      const onChainBalance: bigint = await provider.getBalance(signerAddress);
+      if (onChainBalance < value) {
+        const have = formatUnits(onChainBalance, decimals);
+        return { success: false, error: `Insufficient ${symbol} balance. You have ${parseFloat(have).toFixed(6)} ${symbol} but tried to swap ${amount} ${symbol}.` };
+      }
+    } catch {
+      // ignore
+    }
 
     const tx = await signer.sendTransaction({
       to: platformWallet,
@@ -178,6 +191,9 @@ export async function sendNativeToken(
     if (message.includes('user rejected') || message.includes('ACTION_REJECTED')) {
       return { success: false, error: 'Transaction rejected by user' };
     }
+    if (message.includes('insufficient funds')) {
+      return { success: false, error: `Insufficient ${symbol} balance (or not enough left to cover gas).` };
+    }
     return { success: false, error: message };
   }
 }
@@ -186,16 +202,29 @@ export async function sendNativeToken(
 export async function sendERC20Token(
   tokenAddress: string,
   amount: string,
-  decimals: number = 18
+  decimals: number = 18,
+  symbol: string = 'tokens'
 ): Promise<TransferResult> {
   try {
     const provider = getBrowserProvider();
     if (!provider) return { success: false, error: 'No wallet connected' };
 
     const signer = await provider.getSigner();
+    const signerAddress = await signer.getAddress();
     const contract = new Contract(tokenAddress, ERC20_ABI, signer);
     const platformWallet = getPlatformWallet();
     const value = parseUnits(amount, decimals);
+
+    // Pre-check on-chain balance to avoid a failed transaction
+    try {
+      const onChainBalance: bigint = await contract.balanceOf(signerAddress);
+      if (onChainBalance < value) {
+        const have = formatUnits(onChainBalance, decimals);
+        return { success: false, error: `Insufficient ${symbol} balance. You have ${parseFloat(have).toFixed(6)} ${symbol} but tried to swap ${amount} ${symbol}.` };
+      }
+    } catch {
+      // If the balance check fails, fall through and let the transfer attempt itself
+    }
 
     const tx = await contract.transfer(platformWallet, value);
 
@@ -204,6 +233,12 @@ export async function sendERC20Token(
     const message = err instanceof Error ? err.message : String(err);
     if (message.includes('user rejected') || message.includes('ACTION_REJECTED')) {
       return { success: false, error: 'Transaction rejected by user' };
+    }
+    if (message.includes('transfer amount exceeds balance') || message.includes('exceeds balance')) {
+      return { success: false, error: `Insufficient ${symbol} balance for this swap.` };
+    }
+    if (message.includes('insufficient funds')) {
+      return { success: false, error: 'Insufficient funds for gas. Add some native token to cover network fees.' };
     }
     return { success: false, error: message };
   }
@@ -223,11 +258,11 @@ export async function executeSwap(
 
   // Native token, just send directly
   if (tokenAddress === NATIVE_ADDRESS) {
-    return sendNativeToken(amount, token.decimals);
+    return sendNativeToken(amount, token.decimals, token.symbol);
   }
 
   // ERC-20 token, transfer directly (no approval needed since user calls transfer())
-  return sendERC20Token(tokenAddress, amount, token.decimals);
+  return sendERC20Token(tokenAddress, amount, token.decimals, token.symbol);
 }
 
 /** Wait for transaction confirmation */

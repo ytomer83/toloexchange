@@ -543,6 +543,7 @@ export default function SwapPage() {
 
   // Determine CTA state
   const insufficientBalance = wallet.connected && fromBalance !== null && numFromAmount > parseFloat(fromBalance);
+  const balanceUnknown = wallet.connected && wallet.isSupported && fromBalance === null && !loadingBalance;
   const tokenNotOnChain = wallet.connected && wallet.isSupported && !fromToken.addresses[chainId];
 
   let ctaText = 'Connect Wallet';
@@ -557,6 +558,12 @@ export default function SwapPage() {
     } else if (tokenNotOnChain) {
       ctaText = `${fromToken.symbol} not available on ${CHAINS[chainId]?.shortName}`;
       ctaDisabled = true;
+    } else if (loadingBalance) {
+      ctaText = 'Loading balance...';
+      ctaDisabled = true;
+    } else if (balanceUnknown) {
+      ctaText = 'Unable to load balance, retry';
+      ctaDisabled = false;
     } else if (insufficientBalance) {
       ctaText = `Insufficient ${fromToken.symbol} balance`;
       ctaDisabled = true;
