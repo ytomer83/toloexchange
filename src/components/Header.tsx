@@ -43,7 +43,7 @@ export default function Header() {
             <div className="flex items-center gap-3">
               {/* Chain indicator */}
               {wallet.connected && wallet.chainName && (
-                <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs border border-[var(--border)]" style={{ background: 'var(--bg-secondary)' }}>
+                <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs border border-[var(--border)]" style={{ background: 'var(--bg-secondary)' }}>
                   <div className={`w-2 h-2 rounded-full ${wallet.isSupported ? 'bg-[var(--green)]' : 'bg-[var(--red)]'}`} />
                   <span className="text-[var(--text-secondary)]">{wallet.chainName}</span>
                 </div>

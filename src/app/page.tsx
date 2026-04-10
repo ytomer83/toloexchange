@@ -616,13 +616,27 @@ export default function SwapPage() {
               </div>
             )}
 
+            {/* Zero-balance hint */}
+            {wallet.connected && wallet.isSupported && !loadingBalance && fromBalance !== null && parseFloat(fromBalance) === 0 && (
+              <div className="rounded-xl p-3 mb-3 text-xs flex items-start gap-2" style={{ background: 'rgba(10, 102, 255, 0.06)', border: '1px solid rgba(10, 102, 255, 0.15)' }}>
+                <AlertTriangle className="w-4 h-4 text-[var(--accent)] shrink-0 mt-0.5" />
+                <span className="text-[var(--text-secondary)]">
+                  No {fromToken.symbol} found on <strong>{CHAINS[chainId]?.shortName}</strong>. If your wallet holds {fromToken.symbol} on another network, switch networks in your wallet first.
+                </span>
+              </div>
+            )}
+
             {/* FROM input */}
             <div className="rounded-xl p-4" style={{ background: 'var(--bg-input)' }}>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs text-[var(--text-muted)]">You pay</span>
-                {wallet.connected && fromBalance !== null && (
+                {wallet.connected && wallet.isSupported && (
                   <button onClick={handleMax} className="text-xs text-[var(--text-muted)] hover:text-[var(--accent)] transition-colors">
-                    Balance: {loadingBalance ? '...' : fromBalance} {fromToken.symbol}
+                    {loadingBalance
+                      ? 'Loading balance...'
+                      : fromBalance !== null
+                        ? `Balance: ${fromBalance} ${fromToken.symbol} on ${CHAINS[chainId]?.shortName}`
+                        : `Balance unavailable`}
                   </button>
                 )}
               </div>
