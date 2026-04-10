@@ -857,7 +857,7 @@ export default function SwapPage() {
               playsInline
               preload="metadata"
               className="w-full block"
-              style={{ aspectRatio: '16 / 9', objectFit: 'contain' }}
+              style={{ aspectRatio: '16 / 9', objectFit: 'cover' }}
             >
               <source src="/tolo-explainer.mp4" type="video/mp4" />
               Your browser does not support the video tag.
