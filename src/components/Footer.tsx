@@ -15,7 +15,7 @@ export default function Footer() {
               <span className="text-lg font-bold text-white">TOLO</span>
             </Link>
             <p className="text-xs text-[var(--text-secondary)] leading-relaxed mb-4">
-              Swap digital assets instantly with a flat 0.5% fee. Simple, transparent, and secure.
+              Swap digital assets instantly with 0% fees. Simple, transparent, and secure.
             </p>
             <div className="flex gap-2.5">
               <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--text-muted)] hover:text-white border border-[var(--border)] hover:border-[var(--text-secondary)] transition-colors">

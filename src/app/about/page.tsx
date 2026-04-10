@@ -26,7 +26,7 @@ export default function AboutPage() {
               <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-3">
                 We believe swapping digital assets should be simple, transparent, and accessible.
                 Our platform offers a clean interface where you connect your wallet and swap tokens
-                with a flat 0.5% fee — no hidden costs, no surprises.
+                with 0% fees — completely free, no hidden costs, no surprises.
               </p>
               <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
                 Operating as a registered MSB under FINTRAC, we combine regulatory compliance
@@ -56,7 +56,7 @@ export default function AboutPage() {
           <div className="grid md:grid-cols-3 gap-6">
             {[
               { title: 'Security First', desc: 'Industry-leading security practices protect your assets. We never hold your private keys — you remain in control of your wallet at all times.' },
-              { title: 'Transparency', desc: 'A flat 0.5% fee on every swap. No hidden costs, no variable spreads. What you see is exactly what you get.' },
+              { title: 'Transparency', desc: '0% fees on every swap. No hidden costs, no variable spreads. What you see is exactly what you get.' },
               { title: 'Simplicity', desc: 'Connect your wallet, pick your tokens, and swap. Our interface is designed to make digital asset exchange effortless.' },
             ].map(({ title, desc }) => (
               <div key={title} className="glass-card rounded-2xl p-6">

@@ -17,14 +17,14 @@ const faqs = [
     items: [
       { q: 'How do I deposit crypto?', a: 'Go to your Wallet page, select the asset you want to deposit, choose the network, and copy the deposit address. Send your funds to this address. Make sure to select the correct network.' },
       { q: 'Why hasn\'t my deposit arrived?', a: 'Deposits require network confirmations before being credited. Bitcoin requires 2 confirmations, Ethereum requires 12. Check the blockchain explorer for the status of your transaction.' },
-      { q: 'What are the withdrawal fees?', a: 'Withdrawal fees vary by asset and network. Check our Fee Schedule page for a complete list. Deposits are free for all assets.' },
+      { q: 'What are the swap fees?', a: 'TOLO charges 0% fees on all swaps — completely free, on every currency. Network gas fees may apply depending on the blockchain.' },
     ],
   },
   {
     category: 'Trading',
     items: [
       { q: 'What order types are available?', a: 'We support Limit orders, Market orders, and Stop-Limit orders for spot trading. Each order type serves a different purpose depending on your trading strategy.' },
-      { q: 'What are maker and taker fees?', a: 'Maker fees apply when your order adds liquidity to the order book (limit orders that don\'t fill immediately). Taker fees apply when your order removes liquidity (market orders or limit orders that fill immediately).' },
+      { q: 'Are there any hidden fees?', a: 'No. TOLO charges 0% fees on every swap. There are no hidden costs, no spreads, and no commissions — what you see is what you get.' },
       { q: 'How does the swap feature work?', a: 'The swap feature allows you to instantly exchange one token for another at the best available rate. Simply select the tokens you want to swap, enter the amount, and confirm.' },
     ],
   },

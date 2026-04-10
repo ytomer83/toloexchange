@@ -48,7 +48,7 @@ export default function TermsPage() {
 
           <section>
             <h2 className="text-lg font-semibold text-white mb-3">6. Fees</h2>
-            <p>We charge fees for certain services as outlined on our Fee Schedule page. We reserve the right to change our fee structure at any time with prior notice to users.</p>
+            <p>TOLO charges 0% fees on all swaps — every currency is completely free to swap. Users are responsible for any network gas fees imposed by the underlying blockchain. We reserve the right to change our fee structure at any time with prior notice to users.</p>
           </section>
 
           <section>

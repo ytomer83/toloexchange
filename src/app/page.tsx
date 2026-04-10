@@ -14,7 +14,7 @@ const USD_RATES: Record<string, number> = {
   AAVE: 92.50, ARB: 1.12, OP: 2.35,
 };
 
-const FEE_RATE = 0.005; // 0.5%
+const FEE_RATE = 0; // 0% — free swaps on all currencies
 
 type SwapStep = 'idle' | 'confirming' | 'sending' | 'waiting' | 'success' | 'error';
 
@@ -204,7 +204,7 @@ function SwapStatusModal({ step, fromToken, toToken, fromAmount, toAmount, feeAm
               </div>
 
               <div className="space-y-2 mb-6 text-xs">
-                <div className="flex justify-between"><span className="text-[var(--text-muted)]">Fee (0.5%)</span><span className="text-[var(--text-secondary)]">{feeAmount} {toToken.symbol}</span></div>
+                <div className="flex justify-between"><span className="text-[var(--text-muted)]">Fee</span><span className="text-[var(--green)] font-semibold">FREE (0%)</span></div>
                 <div className="flex justify-between"><span className="text-[var(--text-muted)]">Network</span><span className="text-[var(--text-secondary)]">{chainName}</span></div>
                 {!isNativeToken(fromToken, chainId) && (
                   <div className="flex justify-between"><span className="text-[var(--text-muted)]">Type</span><span className="text-[var(--text-secondary)]">Token Transfer</span></div>
@@ -213,7 +213,7 @@ function SwapStatusModal({ step, fromToken, toToken, fromAmount, toAmount, feeAm
 
               <div className="rounded-xl p-3 mb-4 text-xs" style={{ background: 'rgba(47, 138, 245, 0.06)', border: '1px solid rgba(47, 138, 245, 0.12)' }}>
                 <p className="text-[var(--text-secondary)]">
-                  Your {fromToken.symbol} will be sent to our platform wallet. You will receive {toToken.symbol} minus the 0.5% fee to your connected wallet shortly after confirmation.
+                  Your {fromToken.symbol} will be sent to our platform wallet. You will receive the full amount in {toToken.symbol} to your connected wallet shortly after confirmation — with zero fees.
                 </p>
               </div>
 
@@ -579,11 +579,14 @@ export default function SwapPage() {
 
         {/* Tagline */}
         <div className="text-center mb-8 relative z-10">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full mb-4 text-xs font-semibold" style={{ background: 'rgba(33, 193, 135, 0.12)', border: '1px solid rgba(33, 193, 135, 0.3)', color: 'var(--green)' }}>
+            ✨ 0% FEE — FREE SWAPS ON ALL CURRENCIES
+          </div>
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-3 tracking-tight">
             Swap Digital Assets
           </h1>
           <p className="text-sm md:text-base text-[var(--text-secondary)] max-w-md mx-auto">
-            Connect your wallet, choose your tokens, swap instantly. Flat 0.5% fee on all trades.
+            Connect your wallet, choose your tokens, swap instantly. Zero fees on every swap — completely free.
           </p>
         </div>
 
@@ -678,8 +681,8 @@ export default function SwapPage() {
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-[var(--text-muted)]">Fee (0.5%)</span>
-                  <span className="text-[var(--text-secondary)]">{feeAmount} {toToken.symbol}</span>
+                  <span className="text-[var(--text-muted)]">Fee</span>
+                  <span className="text-[var(--green)] font-semibold">FREE (0%)</span>
                 </div>
                 {wallet.connected && wallet.isSupported && (
                   <div className="flex items-center justify-between text-xs">
@@ -719,7 +722,7 @@ export default function SwapPage() {
               <div className="w-12 h-12 rounded-xl mx-auto mb-3 flex items-center justify-center" style={{ background: 'rgba(33, 193, 135, 0.1)' }}>
                 <Zap className="w-6 h-6 text-[var(--green)]" />
               </div>
-              <h3 className="text-sm font-semibold text-white mb-1">Flat 0.5% Fee</h3>
+              <h3 className="text-sm font-semibold text-white mb-1">0% Fee — Free Swaps</h3>
               <p className="text-xs text-[var(--text-secondary)] max-w-xs mx-auto">
                 Simple, transparent pricing. No hidden fees, no slippage surprises.
               </p>
@@ -745,7 +748,7 @@ export default function SwapPage() {
             {[
               { step: '1', title: 'Connect Wallet', desc: 'Link your MetaMask, Phantom, Trust Wallet, Solflare, or any compatible wallet.' },
               { step: '2', title: 'Choose Tokens', desc: 'Select the token you want to swap from and the token you want to receive.' },
-              { step: '3', title: 'Confirm & Swap', desc: 'Review the rate and 0.5% fee, then confirm the transaction in your wallet.' },
+              { step: '3', title: 'Confirm & Swap', desc: 'Review the rate, then confirm the transaction in your wallet. Zero fees, ever.' },
             ].map(({ step, title, desc }) => (
               <div key={step} className="flex flex-col items-center text-center">
                 <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white mb-3" style={{ background: 'var(--accent)' }}>
