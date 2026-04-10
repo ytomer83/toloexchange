@@ -155,21 +155,21 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected, conne
   if (connectedWallet) {
     const walletInfo = wallets.find(w => w.id === connectedWallet.type);
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }}>
-        <div className="w-full max-w-md rounded-2xl border border-[var(--border)] overflow-hidden animate-fade-in" style={{ background: 'var(--bg-card)' }}>
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(15,23,42,0.4)', backdropFilter: 'blur(4px)' }}>
+        <div className="w-full max-w-md rounded-2xl border border-[var(--border)] overflow-hidden animate-fade-in" style={{ background: 'var(--bg-card)', boxShadow: '0 24px 64px rgba(6,7,10,0.12)' }}>
           <div className="p-4 border-b border-[var(--border)] flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Wallet className="w-5 h-5 text-[var(--accent)]" />
-              <h3 className="font-semibold text-white text-sm sm:text-base">Wallet Connected</h3>
+              <h3 className="font-semibold text-[var(--text-primary)] text-sm sm:text-base">Wallet Connected</h3>
             </div>
-            <button onClick={onClose} className="text-[var(--text-muted)] hover:text-white text-xl">&times;</button>
+            <button onClick={onClose} className="text-[var(--text-muted)] hover:text-[var(--text-primary)] text-xl">&times;</button>
           </div>
 
           <div className="p-5">
             <div className="flex items-center gap-3 mb-5">
               {walletInfo && <WalletIconImg wallet={walletInfo} size={48} />}
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-semibold text-white">{walletInfo?.name || connectedWallet.type}</div>
+                <div className="text-sm font-semibold text-[var(--text-primary)]">{walletInfo?.name || connectedWallet.type}</div>
                 <div className="text-xs font-mono text-[var(--text-muted)] truncate">{connectedWallet.address}</div>
               </div>
               <div className="w-3 h-3 rounded-full bg-[var(--green)]" />
@@ -177,7 +177,7 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected, conne
 
             <div className="rounded-xl p-4 mb-4" style={{ background: 'var(--bg-secondary)' }}>
               <div className="text-[10px] text-[var(--text-muted)] mb-1.5">Wallet Address</div>
-              <div className="text-xs font-mono text-white break-all">{connectedWallet.address}</div>
+              <div className="text-xs font-mono text-[var(--text-primary)] break-all">{connectedWallet.address}</div>
             </div>
 
             <button
@@ -185,7 +185,7 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected, conne
                 onDisconnect?.();
                 onClose();
               }}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-[var(--red)] border border-[var(--red)] hover:bg-[var(--red)] hover:text-white transition-all"
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-[var(--red)] border border-[var(--red)] hover:bg-[var(--red)] hover:text-[var(--text-primary)] transition-all"
               style={{ borderColor: 'rgba(246, 70, 93, 0.4)' }}
             >
               <LogOut className="w-4 h-4" />
@@ -227,7 +227,7 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected, conne
       try {
         accounts = await provider.request({ method: 'eth_accounts' }) as string[];
       } catch {
-        // Some wallets might not support eth_accounts — that's fine
+        // Some wallets might not support eth_accounts, that's fine
       }
 
       // If no existing accounts, request new connection
@@ -274,7 +274,7 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected, conne
         return;
       }
 
-      // MetaMask "already pending" — the user has an open popup
+      // MetaMask "already pending", the user has an open popup
       if (message.includes('already pending')) {
         setErrorMessage('MetaMask already has a pending request. Please open the MetaMask extension (click the fox icon in your browser toolbar) and approve or reject the pending request.');
         setStatus('error');
@@ -298,20 +298,20 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected, conne
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }}>
-      <div className="w-full max-w-md rounded-2xl border border-[var(--border)] overflow-hidden animate-fade-in" style={{ background: 'var(--bg-card)' }}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(15,23,42,0.4)', backdropFilter: 'blur(4px)' }}>
+      <div className="w-full max-w-md rounded-2xl border border-[var(--border)] overflow-hidden animate-fade-in" style={{ background: 'var(--bg-card)', boxShadow: '0 24px 64px rgba(6,7,10,0.12)' }}>
         {/* Header */}
         <div className="p-4 border-b border-[var(--border)] flex items-center justify-between">
           <div className="flex items-center gap-2">
             {selectedWallet && status !== 'idle' && (
-              <button onClick={handleBack} className="text-[var(--text-muted)] hover:text-white mr-1 text-lg">&larr;</button>
+              <button onClick={handleBack} className="text-[var(--text-muted)] hover:text-[var(--text-primary)] mr-1 text-lg">&larr;</button>
             )}
             <Wallet className="w-5 h-5 text-[var(--accent)]" />
-            <h3 className="font-semibold text-white text-sm sm:text-base">
+            <h3 className="font-semibold text-[var(--text-primary)] text-sm sm:text-base">
               {status === 'connected' ? 'Wallet Connected' : selectedWallet ? `Connecting to ${selectedWallet.name}` : 'Connect Wallet'}
             </h3>
           </div>
-          <button onClick={onClose} className="text-[var(--text-muted)] hover:text-white text-xl">&times;</button>
+          <button onClick={onClose} className="text-[var(--text-muted)] hover:text-[var(--text-primary)] text-xl">&times;</button>
         </div>
 
         {/* Content */}
@@ -330,10 +330,10 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected, conne
                   >
                     <WalletIconImg wallet={wallet} />
                     <div className="text-left flex-1 min-w-0">
-                      <div className="text-sm font-semibold text-white group-hover:text-[var(--accent)] transition-colors">{wallet.name}</div>
+                      <div className="text-sm font-semibold text-[var(--text-primary)] group-hover:text-[var(--accent)] transition-colors">{wallet.name}</div>
                       <div className="text-[10px] text-[var(--text-muted)] truncate">{wallet.networks.join(' · ')}</div>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-[var(--text-muted)] group-hover:text-white transition-colors shrink-0" />
+                    <ChevronRight className="w-4 h-4 text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors shrink-0" />
                   </button>
                 ))}
               </div>
@@ -351,7 +351,7 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected, conne
               </div>
               <div className="flex items-center justify-center gap-2 mb-3">
                 <Loader2 className="w-5 h-5 text-[var(--accent)] animate-spin" />
-                <span className="text-sm font-medium text-white">Connecting to {selectedWallet.name}...</span>
+                <span className="text-sm font-medium text-[var(--text-primary)]">Connecting to {selectedWallet.name}...</span>
               </div>
               <p className="text-xs text-[var(--text-muted)]">
                 Please approve the connection in your wallet extension
@@ -361,7 +361,7 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected, conne
                   <div className="h-full rounded-full animate-pulse" style={{ background: 'linear-gradient(90deg, #00b4d8, #c026d3)', width: '60%' }} />
                 </div>
               </div>
-              <button onClick={handleBack} className="mt-4 text-xs text-[var(--text-muted)] hover:text-white transition-colors">
+              <button onClick={handleBack} className="mt-4 text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors">
                 Cancel
               </button>
             </div>
@@ -372,12 +372,12 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected, conne
               <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ background: 'rgba(33, 193, 135, 0.12)' }}>
                 <Check className="w-8 h-8 text-[var(--green)]" />
               </div>
-              <h4 className="text-lg font-bold text-white mb-1">Connected!</h4>
+              <h4 className="text-lg font-bold text-[var(--text-primary)] mb-1">Connected!</h4>
               <p className="text-xs text-[var(--text-secondary)] mb-4">{selectedWallet.name} wallet connected successfully</p>
 
               <div className="rounded-lg p-3 mb-4" style={{ background: 'var(--bg-secondary)' }}>
                 <div className="text-[10px] text-[var(--text-muted)] mb-1">Wallet Address</div>
-                <div className="text-xs font-mono text-white break-all">{connectedAddress.slice(0, 8)}...{connectedAddress.slice(-8)}</div>
+                <div className="text-xs font-mono text-[var(--text-primary)] break-all">{connectedAddress.slice(0, 8)}...{connectedAddress.slice(-8)}</div>
               </div>
 
               <button
@@ -389,7 +389,7 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected, conne
                     }
                   }, 150);
                 }}
-                className="w-full py-3 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90"
+                className="w-full py-3 rounded-xl text-sm font-semibold text-[var(--text-primary)] transition-all hover:opacity-90"
                 style={{ background: 'var(--accent, #2f8af5)' }}
               >
                 Start Swapping
@@ -405,7 +405,7 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected, conne
 
               {mobile ? (
                 <>
-                  <h4 className="text-lg font-bold text-white mb-2">Open in {selectedWallet.name}</h4>
+                  <h4 className="text-lg font-bold text-[var(--text-primary)] mb-2">Open in {selectedWallet.name}</h4>
                   <p className="text-xs text-[var(--text-secondary)] mb-5 max-w-xs mx-auto">
                     Tap below to open this page in {selectedWallet.name}&apos;s in-app browser, where you can connect securely.
                   </p>
@@ -413,7 +413,7 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected, conne
                   <div className="flex flex-col gap-2.5">
                     <a
                       href={getDeepLink(selectedWallet)}
-                      className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90"
+                      className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold text-[var(--text-primary)] transition-all hover:opacity-90"
                       style={{ background: 'var(--accent, #2f8af5)' }}
                     >
                       <Smartphone className="w-4 h-4" />
@@ -424,7 +424,7 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected, conne
                       href={selectedWallet.downloadUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium text-[var(--text-secondary)] border border-[var(--border)] hover:text-white hover:border-[var(--text-secondary)] transition-all"
+                      className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium text-[var(--text-secondary)] border border-[var(--border)] hover:text-[var(--text-primary)] hover:border-[var(--text-secondary)] transition-all"
                     >
                       <Download className="w-4 h-4" />
                       Don&apos;t have it? Install {selectedWallet.name}
@@ -439,7 +439,7 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected, conne
                 </>
               ) : (
                 <>
-                  <h4 className="text-lg font-bold text-white mb-1">{selectedWallet.name} Not Found</h4>
+                  <h4 className="text-lg font-bold text-[var(--text-primary)] mb-1">{selectedWallet.name} Not Found</h4>
                   <p className="text-xs text-[var(--text-secondary)] mb-6">
                     The {selectedWallet.name} extension is not installed in your browser. Install it to connect.
                   </p>
@@ -448,7 +448,7 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected, conne
                       href={selectedWallet.downloadUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90"
+                      className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-[var(--text-primary)] transition-all hover:opacity-90"
                       style={{ background: 'var(--accent, #2f8af5)' }}
                     >
                       <Download className="w-4 h-4" />
@@ -458,7 +458,7 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected, conne
                 </>
               )}
 
-              <button onClick={handleBack} className="mt-4 px-6 py-2.5 rounded-xl text-sm font-medium text-[var(--text-secondary)] hover:text-white transition-colors">
+              <button onClick={handleBack} className="mt-4 px-6 py-2.5 rounded-xl text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
                 Choose Another Wallet
               </button>
             </div>
@@ -469,7 +469,7 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected, conne
               <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ background: 'rgba(246, 70, 93, 0.15)' }}>
                 <AlertTriangle className="w-8 h-8 text-[var(--red)]" />
               </div>
-              <h4 className="text-lg font-bold text-white mb-1">Connection Failed</h4>
+              <h4 className="text-lg font-bold text-[var(--text-primary)] mb-1">Connection Failed</h4>
               <p className="text-xs text-[var(--text-secondary)] mb-1">Could not connect to wallet.</p>
               {errorMessage && (
                 <p className="text-xs text-[var(--text-muted)] mb-4 max-w-xs mx-auto leading-relaxed">{errorMessage}</p>
@@ -478,7 +478,7 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected, conne
               {mobile && selectedWallet && (
                 <a
                   href={getDeepLink(selectedWallet)}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-white mb-3 transition-all hover:opacity-90"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-[var(--text-primary)] mb-3 transition-all hover:opacity-90"
                   style={{ background: 'var(--accent, #2f8af5)' }}
                 >
                   <Smartphone className="w-4 h-4" />
@@ -486,7 +486,7 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected, conne
                 </a>
               )}
 
-              <button onClick={handleBack} className="block mx-auto px-6 py-2.5 rounded-xl text-sm font-medium text-white border border-[var(--border)] hover:border-[var(--text-secondary)]">
+              <button onClick={handleBack} className="block mx-auto px-6 py-2.5 rounded-xl text-sm font-medium text-[var(--text-primary)] border border-[var(--border)] hover:border-[var(--text-secondary)]">
                 Try Again
               </button>
             </div>
@@ -515,7 +515,7 @@ export function ConnectWalletButton({ onClick, connected, address }: { onClick: 
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg text-xs font-semibold text-white transition-all hover:opacity-90"
+      className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg text-xs font-semibold text-[var(--text-primary)] transition-all hover:opacity-90"
       style={{ background: 'var(--accent, #2f8af5)' }}
     >
       <Wallet className="w-3.5 h-3.5" />

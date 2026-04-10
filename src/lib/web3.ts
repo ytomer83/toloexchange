@@ -1,12 +1,12 @@
 // ========================================
-// Web3 Utilities — Token operations
+// Web3 Utilities, Token operations
 // Uses ethers.js v6
 // ========================================
 
 import { BrowserProvider, Contract, formatUnits, parseUnits } from 'ethers';
 import { NATIVE_ADDRESS, type TokenConfig, CHAINS } from './tokens';
 
-// Minimal ERC-20 ABI — only what we need
+// Minimal ERC-20 ABI, only what we need
 const ERC20_ABI = [
   'function name() view returns (string)',
   'function symbol() view returns (string)',
@@ -81,7 +81,7 @@ export async function switchChain(chainId: number): Promise<boolean> {
     });
     return true;
   } catch (err: unknown) {
-    // Chain not added — try to add it
+    // Chain not added, try to add it
     const error = err as { code?: number };
     if (error.code === 4902) {
       try {
@@ -221,12 +221,12 @@ export async function executeSwap(
     return { success: false, error: `${token.symbol} is not available on this chain` };
   }
 
-  // Native token — just send directly
+  // Native token, just send directly
   if (tokenAddress === NATIVE_ADDRESS) {
     return sendNativeToken(amount, token.decimals);
   }
 
-  // ERC-20 token — transfer directly (no approval needed since user calls transfer())
+  // ERC-20 token, transfer directly (no approval needed since user calls transfer())
   return sendERC20Token(tokenAddress, amount, token.decimals);
 }
 

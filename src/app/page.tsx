@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { ArrowDownUp, ChevronDown, X, Search, Shield, Zap, Globe, ArrowRight, ExternalLink, Loader2, Check, AlertTriangle } from 'lucide-react';
+import { ArrowDownUp, ChevronDown, X, Search, Shield, Zap, Globe, ArrowRight, ExternalLink, Loader2, Check, AlertTriangle, Lock, Layers, Sparkles, TrendingUp } from 'lucide-react';
 import { useWallet } from '@/context/WalletContext';
 import { TOKENS, CHAINS, getTokensForChain, isNativeToken, getExplorerTxUrl, type TokenConfig, NATIVE_ADDRESS } from '@/lib/tokens';
 import { getBalance, executeSwap, waitForTransaction, getPlatformWallet, switchChain } from '@/lib/web3';
@@ -14,7 +14,7 @@ const USD_RATES: Record<string, number> = {
   AAVE: 92.50, ARB: 1.12, OP: 2.35,
 };
 
-const FEE_RATE = 0; // 0% — free swaps on all currencies
+const FEE_RATE = 0; // 0%, free swaps on all currencies
 
 type SwapStep = 'idle' | 'confirming' | 'sending' | 'waiting' | 'success' | 'error';
 
@@ -79,11 +79,11 @@ function TokenSelector({ isOpen, onClose, onSelect, excludeSymbol, chainId }: {
   const popular = filtered.filter(t => t.popular);
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }}>
-      <div className="w-full max-w-md rounded-2xl border border-[var(--border)] overflow-hidden animate-fade-in" style={{ background: 'var(--bg-secondary)' }}>
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" style={{ background: 'rgba(15,23,42,0.4)', backdropFilter: 'blur(8px)' }}>
+      <div className="w-full max-w-md rounded-2xl border border-[var(--border)] overflow-hidden animate-fade-in soft-shadow" style={{ background: 'var(--bg-card)' }}>
         <div className="p-4 border-b border-[var(--border)] flex items-center justify-between">
-          <h3 className="font-semibold text-white text-sm">Select a token</h3>
-          <button onClick={onClose} className="text-[var(--text-muted)] hover:text-white"><X className="w-5 h-5" /></button>
+          <h3 className="font-semibold text-[var(--text-primary)] text-sm">Select a token</h3>
+          <button onClick={onClose} className="text-[var(--text-muted)] hover:text-[var(--text-primary)]"><X className="w-5 h-5" /></button>
         </div>
 
         <div className="p-3">
@@ -94,7 +94,7 @@ function TokenSelector({ isOpen, onClose, onSelect, excludeSymbol, chainId }: {
               placeholder="Search by name or symbol"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="bg-transparent border-none outline-none text-sm text-white placeholder:text-[var(--text-muted)] w-full"
+              className="bg-transparent border-none outline-none text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] w-full"
               autoFocus
             />
           </div>
@@ -110,7 +110,7 @@ function TokenSelector({ isOpen, onClose, onSelect, excludeSymbol, chainId }: {
                 style={{ background: 'var(--bg-tertiary)' }}
               >
                 <TokenIcon token={token} size={18} />
-                <span className="text-white font-medium">{token.symbol}</span>
+                <span className="text-[var(--text-primary)] font-medium">{token.symbol}</span>
               </button>
             ))}
           </div>
@@ -125,7 +125,7 @@ function TokenSelector({ isOpen, onClose, onSelect, excludeSymbol, chainId }: {
             >
               <TokenIcon token={token} size={36} />
               <div className="text-left flex-1">
-                <div className="text-sm font-medium text-white">{token.symbol}</div>
+                <div className="text-sm font-medium text-[var(--text-primary)]">{token.symbol}</div>
                 <div className="text-xs text-[var(--text-muted)]">{token.name}</div>
               </div>
               {chainId && (
@@ -168,28 +168,28 @@ function SwapStatusModal({ step, fromToken, toToken, fromAmount, toAmount, feeAm
   const chainName = CHAINS[chainId]?.shortName || '';
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }}>
-      <div className="w-full max-w-md rounded-2xl border border-[var(--border)] overflow-hidden animate-fade-in" style={{ background: 'var(--bg-secondary)' }}>
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" style={{ background: 'rgba(15,23,42,0.4)', backdropFilter: 'blur(8px)' }}>
+      <div className="w-full max-w-md rounded-2xl border border-[var(--border)] overflow-hidden animate-fade-in soft-shadow" style={{ background: 'var(--bg-card)' }}>
         <div className="p-4 border-b border-[var(--border)] flex items-center justify-between">
-          <h3 className="font-semibold text-white text-sm">
+          <h3 className="font-semibold text-[var(--text-primary)] text-sm">
             {step === 'confirming' && 'Confirm Swap'}
             {step === 'sending' && 'Sending Transaction'}
             {step === 'waiting' && 'Processing'}
             {step === 'success' && 'Swap Submitted'}
             {step === 'error' && 'Transaction Failed'}
           </h3>
-          <button onClick={onClose} className="text-[var(--text-muted)] hover:text-white"><X className="w-5 h-5" /></button>
+          <button onClick={onClose} className="text-[var(--text-muted)] hover:text-[var(--text-primary)]"><X className="w-5 h-5" /></button>
         </div>
 
         <div className="p-5">
-          {/* Confirming — show swap details */}
+          {/* Confirming, show swap details */}
           {step === 'confirming' && (
             <div>
               <div className="space-y-3 mb-6">
                 <div className="flex items-center justify-between p-3 rounded-xl" style={{ background: 'var(--bg-input)' }}>
                   <div>
                     <div className="text-xs text-[var(--text-muted)] mb-1">You send</div>
-                    <div className="text-lg font-semibold text-white">{fromAmount} {fromToken.symbol}</div>
+                    <div className="text-lg font-semibold text-[var(--text-primary)]">{fromAmount} {fromToken.symbol}</div>
                   </div>
                   <TokenIcon token={fromToken} size={36} />
                 </div>
@@ -197,7 +197,7 @@ function SwapStatusModal({ step, fromToken, toToken, fromAmount, toAmount, feeAm
                 <div className="flex items-center justify-between p-3 rounded-xl" style={{ background: 'var(--bg-input)' }}>
                   <div>
                     <div className="text-xs text-[var(--text-muted)] mb-1">You receive</div>
-                    <div className="text-lg font-semibold text-white">{toAmount} {toToken.symbol}</div>
+                    <div className="text-lg font-semibold text-[var(--text-primary)]">{toAmount} {toToken.symbol}</div>
                   </div>
                   <TokenIcon token={toToken} size={36} />
                 </div>
@@ -213,7 +213,7 @@ function SwapStatusModal({ step, fromToken, toToken, fromAmount, toAmount, feeAm
 
               <div className="rounded-xl p-3 mb-4 text-xs" style={{ background: 'rgba(47, 138, 245, 0.06)', border: '1px solid rgba(47, 138, 245, 0.12)' }}>
                 <p className="text-[var(--text-secondary)]">
-                  Your {fromToken.symbol} will be sent to our platform wallet. You will receive the full amount in {toToken.symbol} to your connected wallet shortly after confirmation — with zero fees.
+                  Your {fromToken.symbol} will be sent to our platform wallet. You will receive the full amount in {toToken.symbol} to your connected wallet shortly after confirmation, with zero fees.
                 </p>
               </div>
 
@@ -226,13 +226,13 @@ function SwapStatusModal({ step, fromToken, toToken, fromAmount, toAmount, feeAm
             </div>
           )}
 
-          {/* Sending — loading state */}
+          {/* Sending, loading state */}
           {step === 'sending' && (
             <div className="text-center py-8">
               <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ background: 'var(--accent-dim)' }}>
                 <Loader2 className="w-8 h-8 text-[var(--accent)] animate-spin" />
               </div>
-              <h4 className="text-base font-semibold text-white mb-2">
+              <h4 className="text-base font-semibold text-[var(--text-primary)] mb-2">
                 Confirm transfer in your wallet
               </h4>
               <p className="text-xs text-[var(--text-secondary)]">
@@ -247,7 +247,7 @@ function SwapStatusModal({ step, fromToken, toToken, fromAmount, toAmount, feeAm
               <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ background: 'var(--accent-dim)' }}>
                 <Loader2 className="w-8 h-8 text-[var(--accent)] animate-spin" />
               </div>
-              <h4 className="text-base font-semibold text-white mb-2">Transaction Submitted</h4>
+              <h4 className="text-base font-semibold text-[var(--text-primary)] mb-2">Transaction Submitted</h4>
               <p className="text-xs text-[var(--text-secondary)] mb-4">Waiting for blockchain confirmation...</p>
               {txHash && (
                 <a
@@ -268,12 +268,12 @@ function SwapStatusModal({ step, fromToken, toToken, fromAmount, toAmount, feeAm
               <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ background: 'rgba(33, 193, 135, 0.12)' }}>
                 <Check className="w-8 h-8 text-[var(--green)]" />
               </div>
-              <h4 className="text-base font-semibold text-white mb-2">Swap Confirmed!</h4>
+              <h4 className="text-base font-semibold text-[var(--text-primary)] mb-2">Swap Confirmed!</h4>
               <p className="text-xs text-[var(--text-secondary)] mb-2">
                 {fromAmount} {fromToken.symbol} has been received.
               </p>
               <p className="text-xs text-[var(--text-secondary)] mb-4">
-                You will receive <span className="text-white font-semibold">{toAmount} {toToken.symbol}</span> to your wallet shortly.
+                You will receive <span className="text-[var(--text-primary)] font-semibold">{toAmount} {toToken.symbol}</span> to your wallet shortly.
               </p>
 
               {txHash && (
@@ -302,7 +302,7 @@ function SwapStatusModal({ step, fromToken, toToken, fromAmount, toAmount, feeAm
               <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ background: 'rgba(240, 72, 50, 0.12)' }}>
                 <AlertTriangle className="w-8 h-8 text-[var(--red)]" />
               </div>
-              <h4 className="text-base font-semibold text-white mb-2">Transaction Failed</h4>
+              <h4 className="text-base font-semibold text-[var(--text-primary)] mb-2">Transaction Failed</h4>
               <p className="text-xs text-[var(--text-secondary)] mb-4 break-words max-w-xs mx-auto">{error}</p>
               <button
                 onClick={onRetry}
@@ -342,7 +342,7 @@ function ChainSelector({ chainId, onChange }: { chainId: number; onChange: (id: 
             <button
               key={c.chainId}
               onClick={() => { onChange(c.chainId); setOpen(false); }}
-              className={`w-full text-left px-3 py-2 text-xs hover:bg-[var(--bg-tertiary)] transition-colors ${c.chainId === chainId ? 'text-white font-medium' : 'text-[var(--text-secondary)]'}`}
+              className={`w-full text-left px-3 py-2 text-xs hover:bg-[var(--bg-tertiary)] transition-colors ${c.chainId === chainId ? 'text-[var(--text-primary)] font-medium' : 'text-[var(--text-secondary)]'}`}
             >
               {c.shortName}
             </button>
@@ -580,13 +580,13 @@ export default function SwapPage() {
         {/* Tagline */}
         <div className="text-center mb-8 relative z-10">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full mb-4 text-xs font-semibold" style={{ background: 'rgba(33, 193, 135, 0.12)', border: '1px solid rgba(33, 193, 135, 0.3)', color: 'var(--green)' }}>
-            ✨ 0% FEE — FREE SWAPS ON ALL CURRENCIES
+            ✨ 0% FEE, FREE SWAPS ON ALL CURRENCIES
           </div>
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-3 tracking-tight">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[var(--text-primary)] mb-3 tracking-tight">
             Swap Digital Assets
           </h1>
           <p className="text-sm md:text-base text-[var(--text-secondary)] max-w-md mx-auto">
-            Connect your wallet, choose your tokens, swap instantly. Zero fees on every swap — completely free.
+            Connect your wallet, choose your tokens, swap instantly. Zero fees on every swap, completely free.
           </p>
         </div>
 
@@ -625,7 +625,7 @@ export default function SwapPage() {
                   placeholder="0"
                   value={fromAmount}
                   onChange={e => setFromAmount(e.target.value)}
-                  className="flex-1 bg-transparent border-none outline-none text-2xl md:text-3xl font-semibold text-white placeholder:text-[var(--text-muted)] min-w-0"
+                  className="flex-1 bg-transparent border-none outline-none text-2xl md:text-3xl font-semibold text-[var(--text-primary)] placeholder:text-[var(--text-muted)] min-w-0"
                 />
                 <button
                   onClick={() => setSelectorOpen('from')}
@@ -633,7 +633,7 @@ export default function SwapPage() {
                   style={{ background: 'var(--bg-secondary)' }}
                 >
                   <TokenIcon token={fromToken} size={24} />
-                  <span className="text-sm font-semibold text-white">{fromToken.symbol}</span>
+                  <span className="text-sm font-semibold text-[var(--text-primary)]">{fromToken.symbol}</span>
                   <ChevronDown className="w-4 h-4 text-[var(--text-muted)]" />
                 </button>
               </div>
@@ -665,7 +665,7 @@ export default function SwapPage() {
                   style={{ background: 'var(--bg-secondary)' }}
                 >
                   <TokenIcon token={toToken} size={24} />
-                  <span className="text-sm font-semibold text-white">{toToken.symbol}</span>
+                  <span className="text-sm font-semibold text-[var(--text-primary)]">{toToken.symbol}</span>
                   <ChevronDown className="w-4 h-4 text-[var(--text-muted)]" />
                 </button>
               </div>
@@ -705,6 +705,55 @@ export default function SwapPage() {
         </div>
       </section>
 
+      {/* Stats / Trust bar */}
+      <section className="py-10 border-t border-[var(--border)]" style={{ background: 'var(--bg-secondary)' }}>
+        <div className="max-w-[1200px] mx-auto px-4 lg:px-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {[
+              { value: '0%', label: 'Swap fee', sub: 'On every currency' },
+              { value: '7+', label: 'Networks', sub: 'EVM chains supported' },
+              { value: '50+', label: 'Tokens', sub: 'Ready to swap' },
+              { value: '24/7', label: 'Available', sub: 'Always on, non-custodial' },
+            ].map((s) => (
+              <div key={s.label} className="text-center">
+                <div className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] tracking-tight">{s.value}</div>
+                <div className="text-sm font-medium text-[var(--text-primary)] mt-1">{s.label}</div>
+                <div className="text-xs text-[var(--text-muted)] mt-0.5">{s.sub}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Supported tokens marquee */}
+      <section className="py-12 border-t border-[var(--border)]">
+        <div className="max-w-[1200px] mx-auto px-4 lg:px-6">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full mb-3 text-xs font-semibold" style={{ background: 'var(--accent-dim)', color: 'var(--accent)' }}>
+              <Sparkles className="w-3 h-3" />
+              SUPPORTED ASSETS
+            </div>
+            <h2 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)] tracking-tight">All your favorite tokens</h2>
+            <p className="text-sm text-[var(--text-secondary)] mt-2">Swap across the most liquid assets on every major EVM network.</p>
+          </div>
+          <div className="relative overflow-hidden marquee-mask">
+            <div className="flex gap-3 animate-marquee" style={{ width: 'max-content' }}>
+              {[...TOKENS, ...TOKENS].map((t, i) => (
+                <div
+                  key={`${t.symbol}-${i}`}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-full border border-[var(--border)] shrink-0"
+                  style={{ background: 'var(--bg-card)' }}
+                >
+                  <TokenIcon token={t} size={22} />
+                  <span className="text-sm font-semibold text-[var(--text-primary)]">{t.symbol}</span>
+                  <span className="text-xs text-[var(--text-muted)]">{t.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Features strip */}
       <section className="py-16 border-t border-[var(--border)]">
         <div className="max-w-[1200px] mx-auto px-4 lg:px-6">
@@ -713,7 +762,7 @@ export default function SwapPage() {
               <div className="w-12 h-12 rounded-xl mx-auto mb-3 flex items-center justify-center" style={{ background: 'var(--accent-dim)' }}>
                 <Shield className="w-6 h-6 text-[var(--accent)]" />
               </div>
-              <h3 className="text-sm font-semibold text-white mb-1">FINTRAC Registered</h3>
+              <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-1">FINTRAC Registered</h3>
               <p className="text-xs text-[var(--text-secondary)] max-w-xs mx-auto">
                 Fully compliant Money Services Business registered with FINTRAC Canada.
               </p>
@@ -722,7 +771,7 @@ export default function SwapPage() {
               <div className="w-12 h-12 rounded-xl mx-auto mb-3 flex items-center justify-center" style={{ background: 'rgba(33, 193, 135, 0.1)' }}>
                 <Zap className="w-6 h-6 text-[var(--green)]" />
               </div>
-              <h3 className="text-sm font-semibold text-white mb-1">0% Fee — Free Swaps</h3>
+              <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-1">0% Fee, Free Swaps</h3>
               <p className="text-xs text-[var(--text-secondary)] max-w-xs mx-auto">
                 Simple, transparent pricing. No hidden fees, no slippage surprises.
               </p>
@@ -731,7 +780,7 @@ export default function SwapPage() {
               <div className="w-12 h-12 rounded-xl mx-auto mb-3 flex items-center justify-center" style={{ background: 'rgba(151, 71, 255, 0.1)' }}>
                 <Globe className="w-6 h-6" style={{ color: '#9747ff' }} />
               </div>
-              <h3 className="text-sm font-semibold text-white mb-1">Multi-Chain Support</h3>
+              <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-1">Multi-Chain Support</h3>
               <p className="text-xs text-[var(--text-secondary)] max-w-xs mx-auto">
                 Swap across Ethereum, BSC, Polygon, Arbitrum, Optimism, Avalanche, and Base.
               </p>
@@ -743,7 +792,7 @@ export default function SwapPage() {
       {/* How it works */}
       <section className="py-16 border-t border-[var(--border)]" style={{ background: 'var(--bg-card)' }}>
         <div className="max-w-[900px] mx-auto px-4 lg:px-6">
-          <h2 className="text-2xl font-bold text-white text-center mb-10">How It Works</h2>
+          <h2 className="text-2xl font-bold text-[var(--text-primary)] text-center mb-10">How It Works</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
               { step: '1', title: 'Connect Wallet', desc: 'Link your MetaMask, Phantom, Trust Wallet, Solflare, or any compatible wallet.' },
@@ -754,13 +803,79 @@ export default function SwapPage() {
                 <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white mb-3" style={{ background: 'var(--accent)' }}>
                   {step}
                 </div>
-                <h3 className="text-sm font-semibold text-white mb-1">{title}</h3>
+                <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-1">{title}</h3>
                 <p className="text-xs text-[var(--text-secondary)] leading-relaxed">{desc}</p>
                 {step !== '3' && (
                   <ArrowRight className="w-4 h-4 text-[var(--text-muted)] mt-3 rotate-90 md:hidden" />
                 )}
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Trust signals */}
+      <section className="py-20 border-t border-[var(--border)]">
+        <div className="max-w-[1200px] mx-auto px-4 lg:px-6">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full mb-3 text-xs font-semibold" style={{ background: 'rgba(22, 166, 114, 0.1)', color: 'var(--green)' }}>
+              <Shield className="w-3 h-3" />
+              BUILT ON TRUST
+            </div>
+            <h2 className="text-2xl md:text-4xl font-bold text-[var(--text-primary)] tracking-tight max-w-2xl mx-auto">
+              A safer way to swap digital assets
+            </h2>
+            <p className="text-sm md:text-base text-[var(--text-secondary)] mt-3 max-w-xl mx-auto">
+              Non-custodial, transparent, and registered. Your keys stay yours, your swaps stay free.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {[
+              { icon: Lock, title: 'Non-custodial by design', desc: 'You sign every transaction from your own wallet. TOLO never holds your private keys or your assets between swaps.' },
+              { icon: Shield, title: 'FINTRAC registered MSB', desc: 'Operated by Polarbit Solutions Limited, a Money Services Business registered with FINTRAC Canada (MSB C10001398).' },
+              { icon: TrendingUp, title: 'Real on-chain settlement', desc: 'Every swap is settled on-chain with a verifiable transaction hash you can inspect on a block explorer.' },
+              { icon: Layers, title: 'Multi-chain coverage', desc: 'Swap natively across Ethereum, BSC, Polygon, Arbitrum, Optimism, Avalanche, and Base from a single interface.' },
+            ].map(({ icon: Icon, title, desc }) => (
+              <div
+                key={title}
+                className="rounded-2xl p-6 border border-[var(--border)] soft-shadow transition-transform hover:-translate-y-0.5"
+                style={{ background: 'var(--bg-card)' }}
+              >
+                <div className="w-11 h-11 rounded-xl flex items-center justify-center mb-4" style={{ background: 'var(--accent-dim)' }}>
+                  <Icon className="w-5 h-5 text-[var(--accent)]" />
+                </div>
+                <h3 className="text-base font-semibold text-[var(--text-primary)] mb-1.5">{title}</h3>
+                <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="py-20 border-t border-[var(--border)]" style={{ background: 'var(--bg-secondary)' }}>
+        <div className="max-w-[900px] mx-auto px-4 lg:px-6 text-center relative">
+          <div className="absolute inset-0 pointer-events-none" style={{
+            background: 'radial-gradient(ellipse at 50% 50%, rgba(10, 102, 255, 0.08) 0%, transparent 60%)'
+          }} />
+          <div className="relative z-10">
+            <h2 className="text-3xl md:text-5xl font-bold text-[var(--text-primary)] tracking-tight mb-4">
+              Ready to swap?
+            </h2>
+            <p className="text-base text-[var(--text-secondary)] max-w-lg mx-auto mb-8">
+              Connect your wallet, pick a pair, and trade with zero fees. No accounts, no waiting.
+            </p>
+            <button
+              onClick={() => {
+                if (!wallet.connected) wallet.setOpenConnectModal(true);
+                if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-xl text-base font-semibold btn-primary"
+            >
+              {wallet.connected ? 'Start a swap' : 'Connect wallet'}
+              <ArrowRight className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </section>

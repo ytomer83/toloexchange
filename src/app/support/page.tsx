@@ -17,14 +17,14 @@ const faqs = [
     items: [
       { q: 'How do I deposit crypto?', a: 'Go to your Wallet page, select the asset you want to deposit, choose the network, and copy the deposit address. Send your funds to this address. Make sure to select the correct network.' },
       { q: 'Why hasn\'t my deposit arrived?', a: 'Deposits require network confirmations before being credited. Bitcoin requires 2 confirmations, Ethereum requires 12. Check the blockchain explorer for the status of your transaction.' },
-      { q: 'What are the swap fees?', a: 'TOLO charges 0% fees on all swaps — completely free, on every currency. Network gas fees may apply depending on the blockchain.' },
+      { q: 'What are the swap fees?', a: 'TOLO charges 0% fees on all swaps, completely free, on every currency. Network gas fees may apply depending on the blockchain.' },
     ],
   },
   {
     category: 'Trading',
     items: [
       { q: 'What order types are available?', a: 'We support Limit orders, Market orders, and Stop-Limit orders for spot trading. Each order type serves a different purpose depending on your trading strategy.' },
-      { q: 'Are there any hidden fees?', a: 'No. TOLO charges 0% fees on every swap. There are no hidden costs, no spreads, and no commissions — what you see is what you get.' },
+      { q: 'Are there any hidden fees?', a: 'No. TOLO charges 0% fees on every swap. There are no hidden costs, no spreads, and no commissions, what you see is what you get.' },
       { q: 'How does the swap feature work?', a: 'The swap feature allows you to instantly exchange one token for another at the best available rate. Simply select the tokens you want to swap, enter the amount, and confirm.' },
     ],
   },
@@ -58,7 +58,7 @@ export default function SupportPage() {
       <div className="max-w-6xl mx-auto px-4 lg:px-6">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-3xl font-bold text-white mb-2">Help Center</h1>
+          <h1 className="text-3xl font-bold text-[var(--text-primary)] mb-2">Help Center</h1>
           <p className="text-[var(--text-secondary)] mb-6">How can we help you today?</p>
           <div className="relative max-w-lg mx-auto">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--text-muted)]" />
@@ -67,7 +67,7 @@ export default function SupportPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search for answers..."
-              className="w-full pl-12 pr-4 py-3.5 rounded-xl text-sm border border-[var(--border)] text-white outline-none focus:border-[var(--accent)]"
+              className="w-full pl-12 pr-4 py-3.5 rounded-xl text-sm border border-[var(--border)] text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
               style={{ background: 'var(--bg-secondary)' }}
             />
           </div>
@@ -83,7 +83,7 @@ export default function SupportPage() {
           ].map(({ icon: Icon, label, href }) => (
             <a key={label} href={href} className="glass-card rounded-xl p-5 text-center hover-glow transition-all group">
               <Icon className="w-8 h-8 text-[var(--accent)] mx-auto mb-3" />
-              <span className="text-sm text-[var(--text-secondary)] group-hover:text-white transition-colors">{label}</span>
+              <span className="text-sm text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">{label}</span>
             </a>
           ))}
         </div>
@@ -91,7 +91,7 @@ export default function SupportPage() {
         <div className="grid lg:grid-cols-3 gap-8">
           {/* FAQ */}
           <div className="lg:col-span-2">
-            <h2 className="text-xl font-bold text-white mb-6">Frequently Asked Questions</h2>
+            <h2 className="text-xl font-bold text-[var(--text-primary)] mb-6">Frequently Asked Questions</h2>
             <div className="space-y-4">
               {filteredFaqs.map((cat) => (
                 <div key={cat.category}>
@@ -103,7 +103,7 @@ export default function SupportPage() {
                           onClick={() => setOpenFaq(openFaq === item.q ? null : item.q)}
                           className="w-full flex items-center justify-between px-4 py-3 text-left"
                         >
-                          <span className="text-sm font-medium text-white pr-4">{item.q}</span>
+                          <span className="text-sm font-medium text-[var(--text-primary)] pr-4">{item.q}</span>
                           {openFaq === item.q ? <ChevronUp className="w-4 h-4 text-[var(--text-muted)] shrink-0" /> : <ChevronDown className="w-4 h-4 text-[var(--text-muted)] shrink-0" />}
                         </button>
                         {openFaq === item.q && (
@@ -121,7 +121,7 @@ export default function SupportPage() {
 
           {/* Contact Form */}
           <div>
-            <h2 className="text-xl font-bold text-white mb-6">Contact Us</h2>
+            <h2 className="text-xl font-bold text-[var(--text-primary)] mb-6">Contact Us</h2>
             <div className="glass-card rounded-xl p-6">
               <div className="space-y-4">
                 <div>
@@ -131,7 +131,7 @@ export default function SupportPage() {
                     value={contactEmail}
                     onChange={(e) => setContactEmail(e.target.value)}
                     placeholder="your@email.com"
-                    className="w-full px-3 py-2.5 rounded-lg text-sm border border-[var(--border)] text-white outline-none focus:border-[var(--accent)]"
+                    className="w-full px-3 py-2.5 rounded-lg text-sm border border-[var(--border)] text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
                     style={{ background: 'var(--bg-secondary)' }}
                   />
                 </div>
@@ -140,7 +140,7 @@ export default function SupportPage() {
                   <select
                     value={contactSubject}
                     onChange={(e) => setContactSubject(e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-lg text-sm border border-[var(--border)] text-white outline-none focus:border-[var(--accent)]"
+                    className="w-full px-3 py-2.5 rounded-lg text-sm border border-[var(--border)] text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
                     style={{ background: 'var(--bg-secondary)' }}
                   >
                     <option value="">Select a topic</option>
@@ -160,12 +160,12 @@ export default function SupportPage() {
                     onChange={(e) => setContactMessage(e.target.value)}
                     placeholder="Describe your issue..."
                     rows={5}
-                    className="w-full px-3 py-2.5 rounded-lg text-sm border border-[var(--border)] text-white outline-none focus:border-[var(--accent)] resize-none"
+                    className="w-full px-3 py-2.5 rounded-lg text-sm border border-[var(--border)] text-[var(--text-primary)] outline-none focus:border-[var(--accent)] resize-none"
                     style={{ background: 'var(--bg-secondary)' }}
                   />
                 </div>
                 <button
-                  className="w-full py-2.5 rounded-lg text-sm font-semibold text-white transition-all hover:opacity-90"
+                  className="w-full py-2.5 rounded-lg text-sm font-semibold text-[var(--text-primary)] transition-all hover:opacity-90"
                   style={{ background: 'var(--accent, #2f8af5)' }}
                 >
                   Send Message
@@ -177,14 +177,14 @@ export default function SupportPage() {
                   <Mail className="w-4 h-4 text-[var(--accent)]" />
                   <div className="text-sm">
                     <div className="text-[var(--text-muted)]">Email</div>
-                    <div className="text-white">support@toloexchange.biz</div>
+                    <div className="text-[var(--text-primary)]">support@toloexchange.biz</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <MessageSquare className="w-4 h-4 text-[var(--accent)]" />
                   <div className="text-sm">
                     <div className="text-[var(--text-muted)]">Live Chat</div>
-                    <div className="text-white">Available 24/7</div>
+                    <div className="text-[var(--text-primary)]">Available 24/7</div>
                   </div>
                 </div>
               </div>

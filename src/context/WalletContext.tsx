@@ -61,7 +61,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
           return;
         }
 
-        // Wallet is still connected — restore state
+        // Wallet is still connected, restore state
         const currentAddress = accounts[0];
         let chainId: number | null = null;
         let chainName = '';
@@ -160,7 +160,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       chainName = chain?.shortName || `Chain ${chainId}`;
       isSupported = SUPPORTED_CHAIN_IDS.includes(chainId);
     } catch {
-      // Could not detect chain — try wallet-specific provider
+      // Could not detect chain, try wallet-specific provider
       try {
         const provider = getEthereumProvider(walletType);
         if (provider) {

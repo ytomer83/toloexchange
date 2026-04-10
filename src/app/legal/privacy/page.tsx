@@ -2,35 +2,35 @@ export default function PrivacyPage() {
   return (
     <div className="min-h-screen py-12" style={{ background: 'var(--bg-primary)' }}>
       <div className="max-w-4xl mx-auto px-4 lg:px-6">
-        <h1 className="text-3xl font-bold text-white mb-2">Privacy Policy</h1>
+        <h1 className="text-3xl font-bold text-[var(--text-primary)] mb-2">Privacy Policy</h1>
         <p className="text-sm text-[var(--text-muted)] mb-8">Last updated: January 1, 2025</p>
 
         <div className="glass-card rounded-2xl p-8 space-y-6 text-sm text-[var(--text-secondary)] leading-relaxed">
           <section>
-            <h2 className="text-lg font-semibold text-white mb-3">1. Introduction</h2>
+            <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-3">1. Introduction</h2>
             <p>Polarbit Solutions Limited (&quot;Company&quot;, &quot;we&quot;, &quot;us&quot;, or &quot;our&quot;) is committed to protecting your personal data. This Privacy Policy explains how we collect, use, process, and protect your personal data when you use the TOLO Exchange platform.</p>
             <p className="mt-2">We comply with the Personal Information Protection and Electronic Documents Act (PIPEDA) and all applicable Canadian data protection laws.</p>
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-white mb-3">2. Data Controller</h2>
+            <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-3">2. Data Controller</h2>
             <p>The data controller is Polarbit Solutions Limited, registered at 700-838 W Hastings Street, Vancouver, BC V6C 0A6, Canada, FINTRAC MSB: C10001398, Incorporation No: BC1547199.</p>
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-white mb-3">3. Data We Collect</h2>
+            <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-3">3. Data We Collect</h2>
             <p>We collect the following categories of personal data:</p>
             <ul className="list-disc ml-6 mt-2 space-y-1">
-              <li><strong className="text-white">Identity Data:</strong> Full name, date of birth, nationality, government-issued ID documents</li>
-              <li><strong className="text-white">Contact Data:</strong> Email address, phone number, residential address</li>
-              <li><strong className="text-white">Financial Data:</strong> Bank account details, transaction history, wallet addresses</li>
-              <li><strong className="text-white">Technical Data:</strong> IP address, browser type, device information, login data</li>
-              <li><strong className="text-white">Usage Data:</strong> Trading activity, platform interaction, feature usage</li>
+              <li><strong className="text-[var(--text-primary)]">Identity Data:</strong> Full name, date of birth, nationality, government-issued ID documents</li>
+              <li><strong className="text-[var(--text-primary)]">Contact Data:</strong> Email address, phone number, residential address</li>
+              <li><strong className="text-[var(--text-primary)]">Financial Data:</strong> Bank account details, transaction history, wallet addresses</li>
+              <li><strong className="text-[var(--text-primary)]">Technical Data:</strong> IP address, browser type, device information, login data</li>
+              <li><strong className="text-[var(--text-primary)]">Usage Data:</strong> Trading activity, platform interaction, feature usage</li>
             </ul>
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-white mb-3">4. How We Use Your Data</h2>
+            <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-3">4. How We Use Your Data</h2>
             <p>We use your personal data for:</p>
             <ul className="list-disc ml-6 mt-2 space-y-1">
               <li>Account registration and management</li>
@@ -44,7 +44,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-white mb-3">5. Legal Basis for Processing</h2>
+            <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-3">5. Legal Basis for Processing</h2>
             <p>We process your data based on:</p>
             <ul className="list-disc ml-6 mt-2 space-y-1">
               <li>Performance of a contract (providing our services)</li>
@@ -55,12 +55,12 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-white mb-3">6. Data Retention</h2>
+            <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-3">6. Data Retention</h2>
             <p>We retain your personal data for as long as necessary to fulfill the purposes described in this policy, comply with legal obligations, resolve disputes, and enforce our agreements. AML/KYC records are retained for a minimum of 5 years after the end of the business relationship.</p>
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-white mb-3">7. Your Rights</h2>
+            <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-3">7. Your Rights</h2>
             <p>Under applicable privacy law, you have the right to:</p>
             <ul className="list-disc ml-6 mt-2 space-y-1">
               <li>Access your personal data</li>
@@ -74,22 +74,22 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-white mb-3">8. Data Security</h2>
+            <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-3">8. Data Security</h2>
             <p>We implement appropriate technical and organizational measures to protect your personal data, including encryption, access controls, regular security audits, and employee training.</p>
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-white mb-3">9. International Transfers</h2>
+            <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-3">9. International Transfers</h2>
             <p>Your data may be transferred to and processed in countries outside of Canada. We ensure adequate protection through contractual safeguards or other approved transfer mechanisms.</p>
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-white mb-3">10. Cookies</h2>
+            <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-3">10. Cookies</h2>
             <p>We use cookies and similar technologies as described in our Cookie Policy. You can manage cookie preferences through your browser settings.</p>
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-white mb-3">11. Contact Us</h2>
+            <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-3">11. Contact Us</h2>
             <p>For any questions about this Privacy Policy or to exercise your data rights, contact our Data Protection Officer:</p>
             <p className="mt-2">
               Email: support@toloexchange.biz<br />

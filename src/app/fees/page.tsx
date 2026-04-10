@@ -5,8 +5,8 @@ export default function FeesPage() {
     <div className="min-h-screen py-12" style={{ background: 'var(--bg-primary)' }}>
       <div className="max-w-[900px] mx-auto px-4 lg:px-6">
         <div className="text-center mb-12">
-          <h1 className="text-3xl font-bold text-white mb-2">Fee Schedule</h1>
-          <p className="text-sm text-[var(--text-secondary)]">Free swaps on every currency — zero fees, always</p>
+          <h1 className="text-3xl font-bold text-[var(--text-primary)] mb-2">Fee Schedule</h1>
+          <p className="text-sm text-[var(--text-secondary)]">Free swaps on every currency, zero fees, always</p>
         </div>
 
         {/* Swap Fee */}
@@ -17,7 +17,7 @@ export default function FeesPage() {
             <div className="max-w-md mx-auto space-y-3">
               <div className="flex justify-between text-sm py-2 border-b border-[var(--border)]">
                 <span className="text-[var(--text-muted)]">Swap fee</span>
-                <span className="text-[var(--green)] font-medium">0% — completely free</span>
+                <span className="text-[var(--green)] font-medium">0%, completely free</span>
               </div>
               <div className="flex justify-between text-sm py-2 border-b border-[var(--border)]">
                 <span className="text-[var(--text-muted)]">Hidden fees</span>
@@ -25,11 +25,11 @@ export default function FeesPage() {
               </div>
               <div className="flex justify-between text-sm py-2 border-b border-[var(--border)]">
                 <span className="text-[var(--text-muted)]">Minimum swap</span>
-                <span className="text-white font-medium">$1.00</span>
+                <span className="text-[var(--text-primary)] font-medium">$1.00</span>
               </div>
               <div className="flex justify-between text-sm py-2">
                 <span className="text-[var(--text-muted)]">Maximum swap</span>
-                <span className="text-white font-medium">No limit</span>
+                <span className="text-[var(--text-primary)] font-medium">No limit</span>
               </div>
             </div>
           </div>
@@ -37,12 +37,12 @@ export default function FeesPage() {
 
         {/* Example */}
         <div className="mb-12">
-          <h2 className="text-xl font-bold text-white mb-4">Example</h2>
+          <h2 className="text-xl font-bold text-[var(--text-primary)] mb-4">Example</h2>
           <div className="glass-card rounded-xl p-6">
             <div className="space-y-3">
               <div className="flex justify-between text-sm">
                 <span className="text-[var(--text-secondary)]">You swap</span>
-                <span className="text-white font-medium">1,000 USDC</span>
+                <span className="text-[var(--text-primary)] font-medium">1,000 USDC</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-[var(--text-secondary)]">Fee</span>
@@ -50,7 +50,7 @@ export default function FeesPage() {
               </div>
               <div className="border-t border-[var(--border)] pt-3 flex justify-between text-sm">
                 <span className="text-[var(--text-secondary)]">You receive</span>
-                <span className="text-white font-semibold">1,000.00 USDT</span>
+                <span className="text-[var(--text-primary)] font-semibold">1,000.00 USDT</span>
               </div>
             </div>
           </div>
@@ -62,7 +62,7 @@ export default function FeesPage() {
 
         {/* Supported tokens note */}
         <div className="glass-card rounded-xl p-6">
-          <h3 className="text-sm font-semibold text-white mb-2">Supported Tokens</h3>
+          <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-2">Supported Tokens</h3>
           <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
             TOLO supports swapping between 20+ digital assets including USDC, USDT, ETH, BTC, SOL, BNB, DAI, XRP, MATIC, AVAX, DOT, LINK, ADA, DOGE, UNI, AAVE, ARB, OP, LTC, SHIB, and more. All tokens swap with 0% fees.
           </p>
