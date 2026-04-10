@@ -835,6 +835,37 @@ export default function SwapPage() {
         </div>
       </section>
 
+      {/* Explainer video */}
+      <section className="py-20 border-t border-[var(--border)]" style={{ background: 'var(--bg-secondary)' }}>
+        <div className="max-w-[1000px] mx-auto px-4 lg:px-6">
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full mb-3 text-xs font-semibold" style={{ background: 'var(--accent-dim)', color: 'var(--accent)' }}>
+              <Sparkles className="w-3 h-3" />
+              SEE IT IN ACTION
+            </div>
+            <h2 className="text-2xl md:text-4xl font-bold text-[var(--text-primary)] tracking-tight max-w-2xl mx-auto">
+              Watch how TOLO works
+            </h2>
+            <p className="text-sm md:text-base text-[var(--text-secondary)] mt-3 max-w-xl mx-auto">
+              A quick walkthrough of swapping digital assets on TOLO with zero fees.
+            </p>
+          </div>
+
+          <div className="rounded-2xl overflow-hidden border border-[var(--border)] soft-shadow mx-auto" style={{ background: '#000', maxWidth: 860 }}>
+            <video
+              controls
+              playsInline
+              preload="metadata"
+              className="w-full block"
+              style={{ aspectRatio: '16 / 9', objectFit: 'contain' }}
+            >
+              <source src="/tolo-explainer.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          </div>
+        </div>
+      </section>
+
       {/* Trust signals */}
       <section className="py-20 border-t border-[var(--border)]">
         <div className="max-w-[1200px] mx-auto px-4 lg:px-6">
