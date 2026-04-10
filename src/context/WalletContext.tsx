@@ -61,8 +61,16 @@ export function WalletProvider({ children }: { children: ReactNode }) {
           return;
         }
 
-        // Wallet is still connected, restore state
+        // Wallet is still connected, restore state. Always trust the live
+        // address reported by the provider, NOT the one we previously
+        // stashed in localStorage — the user may have switched accounts
+        // inside the wallet since their last visit.
         const currentAddress = accounts[0];
+        if (currentAddress.toLowerCase() !== address.toLowerCase()) {
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({ walletType, address: currentAddress }));
+          } catch { /* ignore */ }
+        }
         let chainId: number | null = null;
         let chainName = '';
         let isSupported = false;

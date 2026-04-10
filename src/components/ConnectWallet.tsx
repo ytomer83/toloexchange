@@ -222,18 +222,29 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected, conne
         return;
       }
 
-      // First try eth_accounts (no popup) to see if already authorized
+      // Force the wallet to show the account picker so the user explicitly
+      // approves the connection every time. This avoids stale/cached accounts
+      // that mobile in-app browsers tend to return silently from eth_accounts.
       let accounts: string[] = [];
       try {
-        accounts = await provider.request({ method: 'eth_accounts' }) as string[];
-      } catch {
-        // Some wallets might not support eth_accounts, that's fine
+        await provider.request({
+          method: 'wallet_requestPermissions',
+          params: [{ eth_accounts: {} }],
+        });
+      } catch (permErr: unknown) {
+        // wallet_requestPermissions is not supported by every wallet
+        // (older MetaMask mobile, Trust, Phantom). That's fine, we fall
+        // through to eth_requestAccounts below. But if the user rejected,
+        // re-throw so the outer catch handles it.
+        const msg = permErr instanceof Error ? permErr.message : String(permErr);
+        if (msg.includes('User rejected') || msg.includes('4001') || msg.includes('rejected') || msg.includes('denied')) {
+          throw permErr;
+        }
       }
 
-      // If no existing accounts, request new connection
-      if (!accounts || accounts.length === 0) {
-        accounts = await provider.request({ method: 'eth_requestAccounts' }) as string[];
-      }
+      // Always ask for the live accounts from the provider. Never trust
+      // a cached eth_accounts response on first connect.
+      accounts = await provider.request({ method: 'eth_requestAccounts' }) as string[];
 
       if (!accounts || accounts.length === 0) {
         throw new Error('No accounts returned. Please unlock your wallet and try again.');
