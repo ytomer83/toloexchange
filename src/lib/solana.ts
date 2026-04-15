@@ -27,13 +27,25 @@ export function getSolanaPlatformWallet(): string {
   return wallet;
 }
 
-// Cached connection
+// RPC endpoints with fallback
+const SOLANA_RPC_URLS = [
+  CHAINS[SOLANA_CHAIN_ID]?.rpcUrl || 'https://rpc.ankr.com/solana',
+  'https://api.mainnet-beta.solana.com',
+];
+
 let _connection: Connection | null = null;
+let _rpcIndex = 0;
+
 function getConnection(): Connection {
   if (!_connection) {
-    const rpc = CHAINS[SOLANA_CHAIN_ID]?.rpcUrl || 'https://api.mainnet-beta.solana.com';
-    _connection = new Connection(rpc, 'confirmed');
+    _connection = new Connection(SOLANA_RPC_URLS[_rpcIndex], 'confirmed');
   }
+  return _connection;
+}
+
+function switchRpc(): Connection {
+  _rpcIndex = (_rpcIndex + 1) % SOLANA_RPC_URLS.length;
+  _connection = new Connection(SOLANA_RPC_URLS[_rpcIndex], 'confirmed');
   return _connection;
 }
 
@@ -47,32 +59,43 @@ export function getPhantomSolana(): SolanaProvider | null {
 // Balance
 // ========================================
 
-/** Get SOL balance */
+/** Get SOL balance (with RPC fallback) */
 export async function getSolBalance(walletAddress: string): Promise<string> {
-  const conn = getConnection();
   const pubkey = new PublicKey(walletAddress);
-  const lamports = await conn.getBalance(pubkey);
-  return (lamports / LAMPORTS_PER_SOL).toFixed(9);
+  try {
+    const lamports = await getConnection().getBalance(pubkey);
+    return (lamports / LAMPORTS_PER_SOL).toFixed(9);
+  } catch {
+    // Try fallback RPC
+    const lamports = await switchRpc().getBalance(pubkey);
+    return (lamports / LAMPORTS_PER_SOL).toFixed(9);
+  }
 }
 
-/** Get SPL token balance */
+/** Get SPL token balance (with RPC fallback) */
 export async function getSplTokenBalance(
   mintAddress: string,
   walletAddress: string,
   decimals: number = 6,
 ): Promise<string> {
-  const conn = getConnection();
   const walletPubkey = new PublicKey(walletAddress);
   const mintPubkey = new PublicKey(mintAddress);
   const ata = await getAssociatedTokenAddress(mintPubkey, walletPubkey);
 
+  async function fetchFromConn(conn: Connection): Promise<string> {
+    try {
+      const account = await getAccount(conn, ata);
+      const raw = Number(account.amount);
+      return (raw / 10 ** decimals).toFixed(decimals);
+    } catch {
+      return '0';
+    }
+  }
+
   try {
-    const account = await getAccount(conn, ata);
-    const raw = Number(account.amount);
-    return (raw / 10 ** decimals).toFixed(decimals);
+    return await fetchFromConn(getConnection());
   } catch {
-    // Account doesn't exist = zero balance
-    return '0';
+    return await fetchFromConn(switchRpc());
   }
 }
 

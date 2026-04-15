@@ -6,7 +6,7 @@ import { useWallet } from '@/context/WalletContext';
 import { getSupportedEcosystems } from '@/context/WalletContext';
 import { TOKENS, CHAINS, getTokensForChain, isNativeToken, isSolanaChain, getExplorerTxUrl, SOLANA_CHAIN_ID, type TokenConfig, NATIVE_ADDRESS } from '@/lib/tokens';
 import { getBalance, executeSwap, waitForTransaction, getPlatformWallet, switchChain } from '@/lib/web3';
-import { getSolanaBalance, executeSolanaSwap, waitForSolanaTransaction } from '@/lib/solana';
+import { getSolanaBalance, executeSolanaSwap, waitForSolanaTransaction, getSolanaPlatformWallet } from '@/lib/solana';
 
 // Simulated exchange rates relative to USD (in production, use a price oracle)
 const USD_RATES: Record<string, number> = {
@@ -608,7 +608,11 @@ export default function SwapPage() {
 
   // Check platform wallet config
   let platformConfigured = true;
-  try { getPlatformWallet(); } catch { platformConfigured = false; }
+  if (isSolanaChain(chainId)) {
+    try { getSolanaPlatformWallet(); } catch { platformConfigured = false; }
+  } else {
+    try { getPlatformWallet(); } catch { platformConfigured = false; }
+  }
 
   return (
     <div className="min-h-[calc(100vh-200px)] flex flex-col">

@@ -105,7 +105,7 @@ export const CHAINS: Record<number, ChainConfig> = {
     chainIdHex: '0x65',
     name: 'Solana',
     shortName: 'Solana',
-    rpcUrl: 'https://api.mainnet-beta.solana.com',
+    rpcUrl: 'https://rpc.ankr.com/solana',
     explorer: 'https://solscan.io',
     explorerName: 'Solscan',
     ecosystem: 'solana',
