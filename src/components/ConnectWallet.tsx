@@ -30,7 +30,7 @@ const wallets: WalletInfo[] = [
     id: 'phantom',
     name: 'Phantom',
     icon: '/wallets/phantom.svg',
-    networks: ['Ethereum', 'Polygon', 'Base', 'Solana'],
+    networks: ['Solana', 'Ethereum', 'Polygon', 'Base'],
     color: '#AB9FF2',
     downloadUrl: 'https://phantom.app/',
     deepLinkBase: 'https://phantom.app/ul/browse/',
@@ -121,8 +121,8 @@ function getEVMProvider(walletId: WalletType): EthereumProvider | null {
 interface ConnectWalletModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConnected: (wallet: WalletType, address: string) => void;
-  connectedWallet?: { type: string; address: string } | null;
+  onConnected: (wallet: WalletType, address: string, ecosystem?: 'evm' | 'solana') => void;
+  connectedWallet?: { type: string; address: string; ecosystem?: string } | null;
   onDisconnect?: () => void;
 }
 
@@ -132,6 +132,7 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected, conne
   const [connectedAddress, setConnectedAddress] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [mobile, setMobile] = useState(false);
+  const [connectEco, setConnectEco] = useState<'evm' | 'solana'>('evm');
   const connectingRef = useRef(false); // Prevent double-connection attempts
 
   useEffect(() => {
@@ -197,7 +198,7 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected, conne
     );
   }
 
-  const handleConnect = async (wallet: WalletInfo) => {
+  const handleConnect = async (wallet: WalletInfo, forceEcosystem?: 'evm' | 'solana') => {
     // Prevent double-clicks / concurrent connection attempts
     if (connectingRef.current) return;
     connectingRef.current = true;
@@ -205,11 +206,31 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected, conne
     setSelectedWallet(wallet);
     setStatus('connecting');
     setErrorMessage('');
+    // Determine which ecosystem to connect with
+    const defaultEco = wallet.id === 'phantom' ? 'solana' : 'evm';
+    const connectEcosystem = forceEcosystem || defaultEco;
+    setConnectEco(connectEcosystem);
 
     try {
       let address = '';
 
-      // All wallets now connect via EVM
+      // Solana connection (Phantom only)
+      if (connectEcosystem === 'solana') {
+        const phantom = typeof window !== 'undefined' ? window.phantom?.solana : null;
+        if (!phantom) {
+          setStatus('not-installed');
+          connectingRef.current = false;
+          return;
+        }
+
+        const resp = await phantom.connect();
+        address = resp.publicKey.toString();
+        setConnectedAddress(address);
+        setStatus('connected');
+        return;
+      }
+
+      // EVM connection
       const provider = getEVMProvider(wallet.id);
       if (!provider) {
         if (mobile) {
@@ -222,9 +243,7 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected, conne
         return;
       }
 
-      // Force the wallet to show the account picker so the user explicitly
-      // approves the connection every time. This avoids stale/cached accounts
-      // that mobile in-app browsers tend to return silently from eth_accounts.
+      // Force the wallet to show the account picker
       let accounts: string[] = [];
       try {
         await provider.request({
@@ -232,18 +251,12 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected, conne
           params: [{ eth_accounts: {} }],
         });
       } catch (permErr: unknown) {
-        // wallet_requestPermissions is not supported by every wallet
-        // (older MetaMask mobile, Trust, Phantom). That's fine, we fall
-        // through to eth_requestAccounts below. But if the user rejected,
-        // re-throw so the outer catch handles it.
         const msg = permErr instanceof Error ? permErr.message : String(permErr);
         if (msg.includes('User rejected') || msg.includes('4001') || msg.includes('rejected') || msg.includes('denied')) {
           throw permErr;
         }
       }
 
-      // Always ask for the live accounts from the provider. Never trust
-      // a cached eth_accounts response on first connect.
       accounts = await provider.request({ method: 'eth_requestAccounts' }) as string[];
 
       if (!accounts || accounts.length === 0) {
@@ -252,7 +265,6 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected, conne
 
       address = accounts[0];
 
-      // Validate we got an EVM address
       if (!address.startsWith('0x')) {
         throw new Error('Invalid address returned. Please make sure your wallet is set to an EVM network (Ethereum, Polygon, etc.).');
       }
@@ -396,7 +408,7 @@ export default function ConnectWalletModal({ isOpen, onClose, onConnected, conne
                   onClose();
                   setTimeout(() => {
                     if (selectedWallet) {
-                      onConnected(selectedWallet.id, connectedAddress);
+                      onConnected(selectedWallet.id, connectedAddress, connectEco);
                     }
                   }, 150);
                 }}

@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
 import { getChainId } from '@/lib/web3';
-import { CHAINS, SUPPORTED_CHAIN_IDS } from '@/lib/tokens';
+import { CHAINS, SUPPORTED_CHAIN_IDS, SOLANA_CHAIN_ID, type Ecosystem } from '@/lib/tokens';
 
 const STORAGE_KEY = 'tolo_wallet';
 
@@ -13,12 +13,14 @@ interface WalletState {
   walletType: string;
   chainName: string;
   isSupported: boolean;
+  ecosystem: Ecosystem;
 }
 
 interface WalletContextType extends WalletState {
-  connect: (walletType: string, address: string) => void;
+  connect: (walletType: string, address: string, ecosystem?: Ecosystem) => void;
   disconnect: () => void;
   updateChain: (chainId: number) => void;
+  switchEcosystem: (ecosystem: Ecosystem) => Promise<void>;
   openConnectModal: boolean;
   setOpenConnectModal: (open: boolean) => void;
 }
@@ -33,7 +35,22 @@ function getEmptyState(): WalletState {
     walletType: '',
     chainName: '',
     isSupported: false,
+    ecosystem: 'evm',
   };
+}
+
+/** Wallet-type defaults */
+function getDefaultEcosystem(walletType: string): Ecosystem {
+  if (walletType === 'phantom') return 'solana';
+  return 'evm';
+}
+
+/** Ecosystems a wallet can support */
+export function getSupportedEcosystems(walletType: string): Ecosystem[] {
+  if (walletType === 'phantom') return ['solana', 'evm'];
+  if (walletType === 'metamask') return ['evm'];
+  if (walletType === 'trustwallet') return ['evm'];
+  return ['evm'];
 }
 
 export function WalletProvider({ children }: { children: ReactNode }) {
@@ -47,30 +64,59 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (!saved) return;
 
-        const { walletType, address } = JSON.parse(saved) as { walletType: string; address: string };
+        const { walletType, address, ecosystem: savedEcosystem } = JSON.parse(saved) as {
+          walletType: string;
+          address: string;
+          ecosystem?: Ecosystem;
+        };
         if (!walletType || !address) return;
 
-        // Verify the wallet is still connected by checking accounts
+        const ecosystem = savedEcosystem || getDefaultEcosystem(walletType);
+
+        if (ecosystem === 'solana') {
+          // Restore Solana connection via Phantom
+          const phantom = window.phantom?.solana;
+          if (!phantom) return;
+
+          try {
+            const resp = await phantom.connect();
+            const solAddress = resp.publicKey.toString();
+            setState({
+              connected: true,
+              address: solAddress,
+              chainId: SOLANA_CHAIN_ID,
+              walletType,
+              chainName: 'Solana',
+              isSupported: true,
+              ecosystem: 'solana',
+            });
+            // Update stored address if it changed
+            if (solAddress !== address) {
+              localStorage.setItem(STORAGE_KEY, JSON.stringify({ walletType, address: solAddress, ecosystem: 'solana' }));
+            }
+          } catch {
+            localStorage.removeItem(STORAGE_KEY);
+          }
+          return;
+        }
+
+        // EVM restore
         const ethereum = getEthereumProvider(walletType);
         if (!ethereum) return;
 
         const accounts = await ethereum.request({ method: 'eth_accounts' }) as string[];
         if (!accounts || accounts.length === 0) {
-          // Wallet no longer connected
           localStorage.removeItem(STORAGE_KEY);
           return;
         }
 
-        // Wallet is still connected, restore state. Always trust the live
-        // address reported by the provider, NOT the one we previously
-        // stashed in localStorage — the user may have switched accounts
-        // inside the wallet since their last visit.
         const currentAddress = accounts[0];
         if (currentAddress.toLowerCase() !== address.toLowerCase()) {
           try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify({ walletType, address: currentAddress }));
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({ walletType, address: currentAddress, ecosystem: 'evm' }));
           } catch { /* ignore */ }
         }
+
         let chainId: number | null = null;
         let chainName = '';
         let isSupported = false;
@@ -92,6 +138,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
           walletType,
           chainName,
           isSupported,
+          ecosystem: 'evm',
         });
       } catch {
         localStorage.removeItem(STORAGE_KEY);
@@ -101,7 +148,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     tryRestore();
   }, []);
 
-  // Listen for chain changes and account changes
+  // Listen for chain changes and account changes (EVM)
   useEffect(() => {
     if (typeof window === 'undefined' || !window.ethereum) return;
 
@@ -109,7 +156,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       const chainId = parseInt(chainIdHex, 16);
       const chain = CHAINS[chainId];
       setState(prev => {
-        if (!prev.connected) return prev;
+        if (!prev.connected || prev.ecosystem !== 'evm') return prev;
         return {
           ...prev,
           chainId,
@@ -120,13 +167,12 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     };
 
     const handleAccountsChanged = (accounts: string[]) => {
-      if (accounts.length === 0) {
-        // Disconnected from wallet side
-        localStorage.removeItem(STORAGE_KEY);
-        setState(getEmptyState());
-      } else {
-        setState(prev => ({ ...prev, address: accounts[0] }));
-        // Update localStorage with new address
+      setState(prev => {
+        if (prev.ecosystem !== 'evm') return prev;
+        if (accounts.length === 0) {
+          localStorage.removeItem(STORAGE_KEY);
+          return getEmptyState();
+        }
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
           try {
@@ -135,13 +181,13 @@ export function WalletProvider({ children }: { children: ReactNode }) {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
           } catch { /* ignore */ }
         }
-      }
+        return { ...prev, address: accounts[0] };
+      });
     };
 
     window.ethereum.on?.('chainChanged', handleChainChanged);
     window.ethereum.on?.('accountsChanged', handleAccountsChanged);
 
-    // Also listen on phantom.ethereum if available
     if (window.phantom?.ethereum && window.phantom.ethereum !== window.ethereum) {
       window.phantom.ethereum.on?.('chainChanged', handleChainChanged);
       window.phantom.ethereum.on?.('accountsChanged', handleAccountsChanged);
@@ -157,7 +203,24 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const connect = useCallback(async (walletType: string, address: string) => {
+  const connect = useCallback(async (walletType: string, address: string, ecosystem?: Ecosystem) => {
+    const eco = ecosystem || getDefaultEcosystem(walletType);
+
+    if (eco === 'solana') {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ walletType, address, ecosystem: 'solana' }));
+      setState({
+        connected: true,
+        address,
+        chainId: SOLANA_CHAIN_ID,
+        walletType,
+        chainName: 'Solana',
+        isSupported: true,
+        ecosystem: 'solana',
+      });
+      return;
+    }
+
+    // EVM connect
     let chainId: number | null = null;
     let chainName = '';
     let isSupported = false;
@@ -168,7 +231,6 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       chainName = chain?.shortName || `Chain ${chainId}`;
       isSupported = SUPPORTED_CHAIN_IDS.includes(chainId);
     } catch {
-      // Could not detect chain, try wallet-specific provider
       try {
         const provider = getEthereumProvider(walletType);
         if (provider) {
@@ -183,8 +245,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       }
     }
 
-    // Save to localStorage
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ walletType, address }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ walletType, address, ecosystem: 'evm' }));
 
     setState({
       connected: true,
@@ -193,13 +254,20 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       walletType,
       chainName,
       isSupported,
+      ecosystem: 'evm',
     });
   }, []);
 
   const disconnect = useCallback(() => {
+    // If Solana Phantom, also disconnect from Phantom
+    if (state.ecosystem === 'solana') {
+      try {
+        window.phantom?.solana?.disconnect();
+      } catch { /* ignore */ }
+    }
     localStorage.removeItem(STORAGE_KEY);
     setState(getEmptyState());
-  }, []);
+  }, [state.ecosystem]);
 
   const updateChain = useCallback((chainId: number) => {
     const chain = CHAINS[chainId];
@@ -211,12 +279,63 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
+  /** Switch between ecosystems for wallets that support multiple (e.g. Phantom) */
+  const switchEcosystem = useCallback(async (ecosystem: Ecosystem) => {
+    const walletType = state.walletType;
+    if (!walletType || !state.connected) return;
+
+    const supported = getSupportedEcosystems(walletType);
+    if (!supported.includes(ecosystem)) return;
+
+    if (ecosystem === 'solana') {
+      const phantom = window.phantom?.solana;
+      if (!phantom) return;
+      try {
+        const resp = await phantom.connect();
+        const solAddress = resp.publicKey.toString();
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ walletType, address: solAddress, ecosystem: 'solana' }));
+        setState({
+          connected: true,
+          address: solAddress,
+          chainId: SOLANA_CHAIN_ID,
+          walletType,
+          chainName: 'Solana',
+          isSupported: true,
+          ecosystem: 'solana',
+        });
+      } catch { /* user rejected */ }
+    } else {
+      // Switch to EVM
+      const evmProvider = getEthereumProvider(walletType);
+      if (!evmProvider) return;
+      try {
+        const accounts = await evmProvider.request({ method: 'eth_requestAccounts' }) as string[];
+        if (accounts.length > 0) {
+          const chainIdHex = await evmProvider.request({ method: 'eth_chainId' }) as string;
+          const chainId = parseInt(chainIdHex, 16);
+          const chain = CHAINS[chainId];
+          localStorage.setItem(STORAGE_KEY, JSON.stringify({ walletType, address: accounts[0], ecosystem: 'evm' }));
+          setState({
+            connected: true,
+            address: accounts[0],
+            chainId,
+            walletType,
+            chainName: chain?.shortName || `Chain ${chainId}`,
+            isSupported: SUPPORTED_CHAIN_IDS.includes(chainId),
+            ecosystem: 'evm',
+          });
+        }
+      } catch { /* user rejected */ }
+    }
+  }, [state.walletType, state.connected]);
+
   return (
     <WalletContext.Provider value={{
       ...state,
       connect,
       disconnect,
       updateChain,
+      switchEcosystem,
       openConnectModal,
       setOpenConnectModal,
     }}>

@@ -3,12 +3,15 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ArrowDownUp, ChevronDown, X, Search, Shield, Zap, Globe, ArrowRight, ExternalLink, Loader2, Check, AlertTriangle, Lock, Layers, Sparkles, TrendingUp } from 'lucide-react';
 import { useWallet } from '@/context/WalletContext';
-import { TOKENS, CHAINS, getTokensForChain, isNativeToken, getExplorerTxUrl, type TokenConfig, NATIVE_ADDRESS } from '@/lib/tokens';
+import { getSupportedEcosystems } from '@/context/WalletContext';
+import { TOKENS, CHAINS, getTokensForChain, isNativeToken, isSolanaChain, getExplorerTxUrl, SOLANA_CHAIN_ID, type TokenConfig, NATIVE_ADDRESS } from '@/lib/tokens';
 import { getBalance, executeSwap, waitForTransaction, getPlatformWallet, switchChain } from '@/lib/web3';
+import { getSolanaBalance, executeSolanaSwap, waitForSolanaTransaction } from '@/lib/solana';
 
 // Simulated exchange rates relative to USD (in production, use a price oracle)
 const USD_RATES: Record<string, number> = {
   USDC: 1, USDT: 1, DAI: 1,
+  SOL: 147.50,
   ETH: 3245.50, WETH: 3245.50, BNB: 598.70, POL: 0.72,
   AVAX: 35.80, LINK: 14.90, UNI: 7.82,
   AAVE: 92.50, ARB: 1.12, OP: 2.35,
@@ -325,6 +328,10 @@ function ChainSelector({ chainId, onChange }: { chainId: number; onChange: (id: 
   const [open, setOpen] = useState(false);
   const chain = CHAINS[chainId];
 
+  // Group chains by ecosystem
+  const evmChains = Object.values(CHAINS).filter(c => c.ecosystem === 'evm');
+  const solanaChain = Object.values(CHAINS).find(c => c.ecosystem === 'solana');
+
   return (
     <div className="relative">
       <button
@@ -332,13 +339,25 @@ function ChainSelector({ chainId, onChange }: { chainId: number; onChange: (id: 
         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs border border-[var(--border)] hover:border-[var(--text-muted)] transition-colors"
         style={{ background: 'var(--bg-tertiary)' }}
       >
-        <div className="w-2 h-2 rounded-full bg-[var(--accent)]" />
+        <div className="w-2 h-2 rounded-full" style={{ background: chain?.ecosystem === 'solana' ? '#9945ff' : 'var(--accent)' }} />
         <span className="text-[var(--text-secondary)]">{chain?.shortName}</span>
         <ChevronDown className="w-3 h-3 text-[var(--text-muted)]" />
       </button>
       {open && (
-        <div className="absolute top-full right-0 mt-1 w-48 rounded-xl border border-[var(--border)] overflow-hidden z-50" style={{ background: 'var(--bg-secondary)' }}>
-          {Object.values(CHAINS).map(c => (
+        <div className="absolute top-full right-0 mt-1 w-48 rounded-xl border border-[var(--border)] overflow-hidden z-50" style={{ background: 'var(--bg-card)' }}>
+          {solanaChain && (
+            <>
+              <div className="px-3 py-1.5 text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-wider" style={{ background: 'var(--bg-tertiary)' }}>Solana</div>
+              <button
+                onClick={() => { onChange(solanaChain.chainId); setOpen(false); }}
+                className={`w-full text-left px-3 py-2 text-xs hover:bg-[var(--bg-tertiary)] transition-colors ${solanaChain.chainId === chainId ? 'text-[var(--text-primary)] font-medium' : 'text-[var(--text-secondary)]'}`}
+              >
+                Solana
+              </button>
+            </>
+          )}
+          <div className="px-3 py-1.5 text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-wider" style={{ background: 'var(--bg-tertiary)' }}>EVM</div>
+          {evmChains.map(c => (
             <button
               key={c.chainId}
               onClick={() => { onChange(c.chainId); setOpen(false); }}
@@ -386,12 +405,18 @@ export default function SwapPage() {
   useEffect(() => {
     const tokens = getTokensForChain(chainId);
     if (tokens.length > 0) {
-      const usdc = tokens.find(t => t.symbol === 'USDC');
-      const usdt = tokens.find(t => t.symbol === 'USDT');
-      const eth = tokens.find(t => t.symbol === 'ETH');
-
-      setFromToken(usdc || eth || tokens[0]);
-      setToToken(usdt || (usdc ? tokens.find(t => t.symbol !== 'USDC') : tokens.find(t => t !== (usdc || eth || tokens[0]))) || tokens[0]);
+      if (isSolanaChain(chainId)) {
+        const sol = tokens.find(t => t.symbol === 'SOL');
+        const usdc = tokens.find(t => t.symbol === 'USDC');
+        setFromToken(sol || tokens[0]);
+        setToToken(usdc || tokens.find(t => t !== (sol || tokens[0])) || tokens[0]);
+      } else {
+        const usdc = tokens.find(t => t.symbol === 'USDC');
+        const usdt = tokens.find(t => t.symbol === 'USDT');
+        const eth = tokens.find(t => t.symbol === 'ETH');
+        setFromToken(usdc || eth || tokens[0]);
+        setToToken(usdt || (usdc ? tokens.find(t => t.symbol !== 'USDC') : tokens.find(t => t !== (usdc || eth || tokens[0]))) || tokens[0]);
+      }
     }
   }, [chainId]);
 
@@ -405,7 +430,11 @@ export default function SwapPage() {
     let cancelled = false;
     setLoadingBalance(true);
 
-    getBalance(fromToken, chainId, wallet.address)
+    const fetchBalance = isSolanaChain(chainId)
+      ? getSolanaBalance(fromToken, wallet.address)
+      : getBalance(fromToken, chainId, wallet.address);
+
+    fetchBalance
       .then(bal => {
         if (!cancelled) {
           setFromBalance(parseFloat(bal).toFixed(6));
@@ -506,9 +535,12 @@ export default function SwapPage() {
 
   const handleConfirmSwap = async () => {
     try {
-      // Execute the swap (direct transfer, no approval needed)
       setSwapStep('sending');
-      const result = await executeSwap(fromToken, chainId, fromAmount, wallet.address);
+
+      const solana = isSolanaChain(chainId);
+      const result = solana
+        ? await executeSolanaSwap(fromToken, fromAmount)
+        : await executeSwap(fromToken, chainId, fromAmount, wallet.address);
 
       if (!result.success) {
         setSwapError(result.error || 'Transaction failed');
@@ -516,11 +548,13 @@ export default function SwapPage() {
         return;
       }
 
-      // Wait for confirmation
       setTxHash(result.txHash || '');
       setSwapStep('waiting');
 
-      const confirmation = await waitForTransaction(result.txHash!);
+      const confirmation = solana
+        ? await waitForSolanaTransaction(result.txHash!)
+        : await waitForTransaction(result.txHash!);
+
       if (confirmation.success) {
         setSwapStep('success');
       } else {
@@ -608,11 +642,31 @@ export default function SwapPage() {
               </div>
             )}
 
+            {/* Ecosystem switcher (visible when connected with multi-ecosystem wallet) */}
+            {wallet.connected && getSupportedEcosystems(wallet.walletType).length > 1 && (
+              <div className="flex items-center gap-1.5 mb-3 p-1 rounded-xl" style={{ background: 'var(--bg-input)' }}>
+                {getSupportedEcosystems(wallet.walletType).map(eco => (
+                  <button
+                    key={eco}
+                    onClick={() => wallet.switchEcosystem(eco)}
+                    className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all ${
+                      wallet.ecosystem === eco
+                        ? 'text-[var(--text-primary)] shadow-sm'
+                        : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'
+                    }`}
+                    style={wallet.ecosystem === eco ? { background: 'var(--bg-card)' } : {}}
+                  >
+                    {eco === 'solana' ? '◎ Solana' : '⟠ EVM'}
+                  </button>
+                ))}
+              </div>
+            )}
+
             {/* Unsupported chain warning */}
             {wallet.connected && !wallet.isSupported && (
               <div className="rounded-xl p-3 mb-3 text-xs flex items-center gap-2" style={{ background: 'rgba(240, 72, 50, 0.08)', border: '1px solid rgba(240, 72, 50, 0.2)' }}>
                 <AlertTriangle className="w-4 h-4 text-[var(--red)] shrink-0" />
-                <span className="text-[var(--red)]">Unsupported network. Please switch to Ethereum, BSC, Polygon, Arbitrum, Optimism, Avalanche, or Base.</span>
+                <span className="text-[var(--red)]">Unsupported network. Please switch to Ethereum, BSC, Polygon, Arbitrum, Optimism, Avalanche, Base, or Solana.</span>
               </div>
             )}
 
@@ -732,7 +786,7 @@ export default function SwapPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
               { value: '0%', label: 'Swap fee', sub: 'On every currency' },
-              { value: '7+', label: 'Networks', sub: 'EVM chains supported' },
+              { value: '8+', label: 'Networks', sub: 'EVM + Solana supported' },
               { value: '50+', label: 'Tokens', sub: 'Ready to swap' },
               { value: '24/7', label: 'Available', sub: 'Always on, non-custodial' },
             ].map((s) => (
@@ -803,7 +857,7 @@ export default function SwapPage() {
               </div>
               <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-1">Multi-Chain Support</h3>
               <p className="text-xs text-[var(--text-secondary)] max-w-xs mx-auto">
-                Swap across Ethereum, BSC, Polygon, Arbitrum, Optimism, Avalanche, and Base.
+                Swap across Ethereum, BSC, Polygon, Arbitrum, Optimism, Avalanche, Base, and Solana.
               </p>
             </div>
           </div>
@@ -887,7 +941,7 @@ export default function SwapPage() {
               { icon: Lock, title: 'Non-custodial by design', desc: 'You sign every transaction from your own wallet. TOLO never holds your private keys or your assets between swaps.' },
               { icon: Shield, title: 'FINTRAC registered MSB', desc: 'Operated by Polarbit Solutions Limited, a Money Services Business registered with FINTRAC Canada (MSB C10001398).' },
               { icon: TrendingUp, title: 'Real on-chain settlement', desc: 'Every swap is settled on-chain with a verifiable transaction hash you can inspect on a block explorer.' },
-              { icon: Layers, title: 'Multi-chain coverage', desc: 'Swap natively across Ethereum, BSC, Polygon, Arbitrum, Optimism, Avalanche, and Base from a single interface.' },
+              { icon: Layers, title: 'Multi-chain coverage', desc: 'Swap natively across Ethereum, BSC, Polygon, Arbitrum, Optimism, Avalanche, Base, and Solana from a single interface.' },
             ].map(({ icon: Icon, title, desc }) => (
               <div
                 key={title}

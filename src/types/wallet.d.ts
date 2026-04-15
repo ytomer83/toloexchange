@@ -14,9 +14,12 @@ interface EthereumProvider {
 interface SolanaProvider {
   isPhantom?: boolean;
   isSolflare?: boolean;
-  connect: () => Promise<{ publicKey: { toString: () => string } }>;
+  publicKey: import('@solana/web3.js').PublicKey | null;
+  connect: () => Promise<{ publicKey: import('@solana/web3.js').PublicKey }>;
   disconnect: () => Promise<void>;
+  signAndSendTransaction: (transaction: import('@solana/web3.js').Transaction) => Promise<{ signature: string }>;
   on: (event: string, handler: (...args: any[]) => void) => void;
+  removeListener?: (event: string, handler: (...args: any[]) => void) => void;
 }
 
 interface Window {

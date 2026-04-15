@@ -109,10 +109,10 @@ export default function Header() {
       <ConnectWalletModal
         isOpen={wallet.openConnectModal}
         onClose={() => wallet.setOpenConnectModal(false)}
-        onConnected={(walletType, address) => {
-          wallet.connect(walletType, address);
+        onConnected={(walletType, address, ecosystem) => {
+          wallet.connect(walletType, address, ecosystem);
         }}
-        connectedWallet={wallet.connected ? { type: wallet.walletType, address: wallet.address } : null}
+        connectedWallet={wallet.connected ? { type: wallet.walletType, address: wallet.address, ecosystem: wallet.ecosystem } : null}
         onDisconnect={() => {
           wallet.disconnect();
         }}

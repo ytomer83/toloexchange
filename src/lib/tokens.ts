@@ -3,6 +3,8 @@
 // Real mainnet contract addresses
 // ========================================
 
+export type Ecosystem = 'evm' | 'solana';
+
 export interface ChainConfig {
   chainId: number;
   chainIdHex: string;
@@ -11,6 +13,7 @@ export interface ChainConfig {
   rpcUrl: string;
   explorer: string;
   explorerName: string;
+  ecosystem: Ecosystem;
   nativeCurrency: {
     name: string;
     symbol: string;
@@ -27,6 +30,7 @@ export const CHAINS: Record<number, ChainConfig> = {
     rpcUrl: 'https://eth.llamarpc.com',
     explorer: 'https://etherscan.io',
     explorerName: 'Etherscan',
+    ecosystem: 'evm',
     nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
   },
   56: {
@@ -37,6 +41,7 @@ export const CHAINS: Record<number, ChainConfig> = {
     rpcUrl: 'https://bsc-dataseed.binance.org',
     explorer: 'https://bscscan.com',
     explorerName: 'BscScan',
+    ecosystem: 'evm',
     nativeCurrency: { name: 'BNB', symbol: 'BNB', decimals: 18 },
   },
   137: {
@@ -47,6 +52,7 @@ export const CHAINS: Record<number, ChainConfig> = {
     rpcUrl: 'https://polygon-rpc.com',
     explorer: 'https://polygonscan.com',
     explorerName: 'PolygonScan',
+    ecosystem: 'evm',
     nativeCurrency: { name: 'POL', symbol: 'POL', decimals: 18 },
   },
   42161: {
@@ -57,6 +63,7 @@ export const CHAINS: Record<number, ChainConfig> = {
     rpcUrl: 'https://arb1.arbitrum.io/rpc',
     explorer: 'https://arbiscan.io',
     explorerName: 'Arbiscan',
+    ecosystem: 'evm',
     nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
   },
   10: {
@@ -67,6 +74,7 @@ export const CHAINS: Record<number, ChainConfig> = {
     rpcUrl: 'https://mainnet.optimism.io',
     explorer: 'https://optimistic.etherscan.io',
     explorerName: 'Optimism Explorer',
+    ecosystem: 'evm',
     nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
   },
   43114: {
@@ -77,6 +85,7 @@ export const CHAINS: Record<number, ChainConfig> = {
     rpcUrl: 'https://api.avax.network/ext/bc/C/rpc',
     explorer: 'https://snowtrace.io',
     explorerName: 'SnowTrace',
+    ecosystem: 'evm',
     nativeCurrency: { name: 'AVAX', symbol: 'AVAX', decimals: 18 },
   },
   8453: {
@@ -87,7 +96,20 @@ export const CHAINS: Record<number, ChainConfig> = {
     rpcUrl: 'https://mainnet.base.org',
     explorer: 'https://basescan.org',
     explorerName: 'BaseScan',
+    ecosystem: 'evm',
     nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+  },
+  // Solana mainnet-beta (pseudo chainId 101)
+  101: {
+    chainId: 101,
+    chainIdHex: '0x65',
+    name: 'Solana',
+    shortName: 'Solana',
+    rpcUrl: 'https://api.mainnet-beta.solana.com',
+    explorer: 'https://solscan.io',
+    explorerName: 'Solscan',
+    ecosystem: 'solana',
+    nativeCurrency: { name: 'SOL', symbol: 'SOL', decimals: 9 },
   },
 };
 
@@ -99,6 +121,8 @@ export const SUPPORTED_CHAIN_IDS = Object.keys(CHAINS).map(Number);
 // ========================================
 
 export const NATIVE_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
+export const SOLANA_NATIVE = 'So11111111111111111111111111111111111111112'; // wrapped SOL mint
+export const SOLANA_CHAIN_ID = 101;
 
 export interface TokenConfig {
   symbol: string;
@@ -113,6 +137,18 @@ export interface TokenConfig {
 }
 
 export const TOKENS: TokenConfig[] = [
+  {
+    symbol: 'SOL',
+    name: 'Solana',
+    icon: '◎',
+    image: 'https://assets.coingecko.com/coins/images/4128/small/solana.png',
+    color: '#9945ff',
+    decimals: 9,
+    popular: true,
+    addresses: {
+      101: SOLANA_NATIVE,
+    },
+  },
   {
     symbol: 'ETH',
     name: 'Ethereum',
@@ -144,6 +180,7 @@ export const TOKENS: TokenConfig[] = [
       56: '0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d',
       43114: '0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E',
       8453: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+      101: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', // Solana USDC
     },
   },
   {
@@ -161,6 +198,7 @@ export const TOKENS: TokenConfig[] = [
       10: '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58',
       56: '0x55d398326f99059fF775485246999027B3197955',
       43114: '0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7',
+      101: 'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB', // Solana USDT
     },
   },
   {
@@ -303,7 +341,17 @@ export function getTokenBySymbol(symbol: string): TokenConfig | undefined {
 
 /** Check if token is native on a chain */
 export function isNativeToken(token: TokenConfig, chainId: number): boolean {
-  return token.addresses[chainId] === NATIVE_ADDRESS;
+  return token.addresses[chainId] === NATIVE_ADDRESS || token.addresses[chainId] === SOLANA_NATIVE;
+}
+
+/** Check if a chain is Solana */
+export function isSolanaChain(chainId: number): boolean {
+  return CHAINS[chainId]?.ecosystem === 'solana';
+}
+
+/** Get ecosystem for a chain */
+export function getEcosystem(chainId: number): Ecosystem {
+  return CHAINS[chainId]?.ecosystem || 'evm';
 }
 
 /** Get contract address for a token on a chain */
